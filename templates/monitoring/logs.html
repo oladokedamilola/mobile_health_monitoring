@@ -1,0 +1,39 @@
+{% extends 'base_monitor.html' %}
+{% block title %}Health Logs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h3 class="fw-bold mb-3 text-center">📋 Health Logs</h3>
+
+  <form method="get" class="d-flex justify-content-center gap-3 mb-4">
+    <input type="date" name="start_date" class="form-control w-auto" placeholder="Start Date">
+    <input type="date" name="end_date" class="form-control w-auto" placeholder="End Date">
+    <button class="btn btn-primary">Filter</button>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Date/Time</th>
+          <th>Heart Rate (bpm)</th>
+          <th>Resp. Rate (bpm)</th>
+          <th>SpO₂ (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+          <tr>
+            <td>{{ log.timestamp|date:"Y-m-d H:i" }}</td>
+            <td>{{ log.heart_rate|default:"-" }}</td>
+            <td>{{ log.respiratory_rate|default:"-" }}</td>
+            <td>{{ log.spo2|default:"-" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="text-center text-muted">No records available</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Offline Sync - Auralis Health{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-3">☁️ Offline Sync & Logs</h2>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <button id="syncNow" class="btn btn-primary btn-sm">Sync Now</button>
+    <span class="text-muted small">Last updated: {{ logs.0.created_at|date:"M d, H:i" }}</span>
+  </div>
+
+  <h5>Unsynced Data ({{ offline_data.count }})</h5>
+  <ul class="list-group mb-4">
+    {% for record in offline_data %}
+      <li class="list-group-item">{{ record.data_type }} — {{ record.created_at|date:"M d, H:i" }}</li>
+    {% empty %}
+      <p class="text-muted">No offline data pending sync.</p>
+    {% endfor %}
+  </ul>
+
+  <h5>Recent Sync Logs</h5>
+  <ul class="list-group">
+    {% for log in logs %}
+      <li class="list-group-item {% if log.status == 'error' %}list-group-item-danger{% else %}list-group-item-success{% endif %}">
+        {{ log.message }} <span class="text-muted float-end">{{ log.created_at|date:"M d, H:i" }}</span>
+      </li>
+    {% empty %}
+      <p class="text-muted">No sync logs yet.</p>
+    {% endfor %}
+  </ul>
+</div>
+
+<script>
+document.getElementById("syncNow").addEventListener("click", async () => {
+  const res = await fetch("{% url 'sync:api_sync_now' %}", { method: "POST" });
+  if (res.ok) location.reload();
+});
+</script>
+{% endblock %}

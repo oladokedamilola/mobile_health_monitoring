@@ -1,0 +1,39 @@
+{% extends "base_monitor.html" %}
+{% block title %}Notifications - Auralis Health{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-3">🔔 Notifications</h2>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted">You have {{ unread_count }} unread notification{{ unread_count|pluralize }}</p>
+    <button id="markAll" class="btn btn-outline-primary btn-sm">Mark all as read</button>
+  </div>
+
+  <ul class="list-group">
+    {% for note in notifications %}
+    <li class="list-group-item d-flex justify-content-between align-items-center {% if not note.is_read %}bg-light{% endif %}">
+      <span>
+        {% if note.severity == 'critical' %}
+          <span class="badge bg-danger">Critical</span>
+        {% elif note.severity == 'warning' %}
+          <span class="badge bg-warning text-dark">Warning</span>
+        {% else %}
+          <span class="badge bg-info text-white">Info</span>
+        {% endif %}
+        {{ note.message }}
+      </span>
+      <small class="text-muted">{{ note.created_at|date:"M d, H:i" }}</small>
+    </li>
+    {% empty %}
+    <p class="text-muted text-center">No notifications yet.</p>
+    {% endfor %}
+  </ul>
+</div>
+
+<script>
+document.getElementById("markAll").addEventListener("click", async () => {
+  const res = await fetch("{% url 'notifications:api_mark_all_read' %}", {method: "POST"});
+  if (res.ok) location.reload();
+});
+</script>
+{% endblock %}

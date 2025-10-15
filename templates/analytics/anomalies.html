@@ -1,0 +1,51 @@
+{% extends "base_monitor.html" %}
+{% load static %}
+{% block title %}Anomalies - Auralis Health{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold text-primary">⚠️ Detected Anomalies</h4>
+    <a href="{% url 'analytics:report' %}" class="btn btn-outline-primary">
+      <i class="bi bi-file-earmark-text"></i> Generate Report
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      {% if anomalies %}
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Status</th>
+                <th>Detected On</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for anomaly in anomalies %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ anomaly.parameter }}</td>
+                <td>{{ anomaly.value }}</td>
+                <td>
+                  <span class="badge bg-danger">{{ anomaly.severity|capfirst }}</span>
+                </td>
+                <td>{{ anomaly.detected_at|date:"M d, Y H:i" }}</td>
+                <td>{{ anomaly.remark|default:"—" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted text-center my-4">No anomalies detected recently. All readings are stable 💪</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

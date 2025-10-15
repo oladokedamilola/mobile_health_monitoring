@@ -1,0 +1,77 @@
+<div class="container my-5">
+  <h3 class="text-center mb-4">Health Trends</h3>
+  <canvas id="heartRateChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  async function loadAnalytics() {
+    const response = await fetch("/api/analytics/trends/");
+    const data = await response.json();
+
+    const labels = data.map(item => new Date(item.created_at).toLocaleDateString());
+    const heartRates = data.map(item => item.average_heart_rate);
+
+    const ctx = document.getElementById('heartRateChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Average Heart Rate',
+          data: heartRates,
+          fill: false,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+  loadAnalytics();
+</script>
+
+
+
+<!-- templates/analytics_dashboard.html -->
+{% extends "base.html" %}
+{% block title %}Analytics — Auralis{% endblock %}
+{% block content %}
+<section class="container mt-4">
+  <div class="grid">
+    <div class="col-8">
+      <div class="card chart-card">
+        <h4>Average Heart Rate (Trends)</h4>
+        <canvas id="heartRateChart" width="800" height="300"></canvas>
+      </div>
+    </div>
+
+    <div class="col-4">
+      <div class="card">
+        <h5>Quick Actions</h5>
+        <button class="btn-primary" id="generateSummary">Generate Weekly Summary</button>
+      </div>
+      <div class="card mt-2">
+        <h5>Device</h5>
+        <p id="sensor-status">Sensors: Not active</p>
+        <button class="btn-primary" id="activate-sensors">Start Sensors</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Install banner (hidden by default) -->
+<div id="installPrompt" class="install-banner" style="display:none">
+  <div>Install Auralis Health on your device</div>
+  <button id="btnInstall">Install</button>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/analytics.js' %}"></script>
+<script src="{% static 'js/notifications-ws.js' %}"></script>
+<script src="{% static 'js/sensors/placeholder-sensors.js' %}"></script>
+{% endblock %}

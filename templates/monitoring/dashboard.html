@@ -1,0 +1,90 @@
+{% extends "base_monitor.html" %}
+{% load static %}
+{% block title %}Dashboard — Auralis Health{% endblock %}
+
+{% extends 'base.html' %}
+{% block title %}Health Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-3 fw-bold text-center">My Health Dashboard</h2>
+  <p class="text-center text-muted mb-4">Overview of your recent health and activity readings</p>
+
+  <div class="row g-4 text-center">
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h6 class="text-muted">Heart Rate</h6>
+          <h3 class="fw-bold text-danger">{{ latest_heart_rate|default:"--" }} bpm</h3>
+          <a href="{% url 'monitoring:heart_monitor' %}" class="btn btn-sm btn-outline-danger mt-2">Monitor</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h6 class="text-muted">Respiratory Rate</h6>
+          <h3 class="fw-bold text-primary">{{ latest_resp_rate|default:"--" }} bpm</h3>
+          <a href="{% url 'monitoring:respiration_monitor' %}" class="btn btn-sm btn-outline-primary mt-2">Monitor</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h6 class="text-muted">SpO₂</h6>
+          <h3 class="fw-bold text-success">{{ latest_spo2|default:"--" }}%</h3>
+          <a href="#" class="btn btn-sm btn-outline-success mt-2 disabled">Coming Soon</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h6 class="text-muted">Activity</h6>
+          <h5 class="fw-bold text-dark">{{ latest_activity|default:"Idle" }}</h5>
+          <a href="{% url 'monitoring:activity_monitor' %}" class="btn btn-sm btn-outline-dark mt-2">Track</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-5">
+    <a href="{% url 'monitoring:live_monitoring' %}" class="btn btn-lg btn-primary">Start Live Monitoring</a>
+  </div>
+</div>
+{% endblock %}
+
+
+    <!-- Trend Chart -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Recent Trends</h5>
+        <canvas id="trendChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('trendChart').getContext('2d');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{
+      label: 'Heart Rate (bpm)',
+      data: [72, 76, 80, 74, 70, 78, 75],
+      tension: 0.3,
+      borderWidth: 2,
+      borderColor: '#dc3545'
+    }]
+  },
+  options: { scales: { y: { beginAtZero: false } } }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Verify Your Email — Auralis Health{% endblock %}
+{% block content %}
+<section class="d-flex align-items-center justify-content-center" style="min-height: 90vh;">
+  <div class="text-center">
+    <img src="{% static 'images/email-verify.svg' %}" alt="Verify" width="120" class="mb-4">
+    <h4 class="fw-bold text-success">Verify Your Email</h4>
+    <p class="text-muted mb-4">A verification link has been sent to <strong>{{ user.email }}</strong>.  
+       Please check your inbox to activate your account.</p>
+    <a href="/" class="btn btn-outline-success px-4">Return Home</a>
+  </div>
+</section>
+{% endblock %}
