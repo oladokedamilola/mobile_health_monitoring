@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Verification Status — Auralis Health{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+    <div class="card-body">
+      <h4 class="fw-bold mb-3">Verification Status</h4>
+
+      {% if verification.status == "pending" %}
+        <p class="text-warning fw-semibold">Your verification is under review.</p>
+        <p class="text-muted">You’ll be notified once approved by the admin.</p>
+      {% elif verification.status == "approved" %}
+        <p class="text-success fw-semibold">✅ Verified! You now have full access.</p>
+      {% elif verification.status == "rejected" %}
+        <p class="text-danger fw-semibold">❌ Verification Rejected.</p>
+        {% if verification.remarks %}
+          <p class="text-muted small">Reason: {{ verification.remarks }}</p>
+        {% endif %}
+        <a href="{% url 'accounts:doctor_verification' %}" class="btn btn-outline-success mt-3">Resubmit Verification</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

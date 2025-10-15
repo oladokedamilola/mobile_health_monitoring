@@ -1,0 +1,172 @@
+{% extends "base_monitor.html" %}
+{% block title %}Auralis Health — Live Monitoring{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+  <div class="container text-center">
+    <h1 class="mb-3 fw-bold text-success">🌿 Live Monitoring</h1>
+    <p class="text-muted mb-5">
+      Real-time health insights powered by your device sensors.
+    </p>
+
+    <!-- Live Stats -->
+    <div class="row justify-content-center g-4">
+      <div class="col-md-3">
+        <div class="card shadow-sm p-4 border-0 rounded-4 bg-white">
+          <h5 class="text-uppercase text-muted">Heart Rate</h5>
+          <h2 id="heartRate" class="display-5 fw-bold text-success">--</h2>
+          <p class="text-secondary mb-0">bpm</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm p-4 border-0 rounded-4 bg-white">
+          <h5 class="text-uppercase text-muted">Respiratory Rate</h5>
+          <h2 id="respRate" class="display-5 fw-bold text-success">--</h2>
+          <p class="text-secondary mb-0">rpm</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm p-4 border-0 rounded-4 bg-white">
+          <h5 class="text-uppercase text-muted">Activity</h5>
+          <h2 id="activity" class="display-6 fw-semibold text-success">--</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="mt-5">
+      <h4 class="text-muted mb-3">Recent Heart Rate Trend</h4>
+      <canvas id="heartChart" height="120"></canvas>
+    </div>
+
+    <!-- Sync Info -->
+    <div class="mt-5 text-center">
+      <button class="btn btn-success btn-lg px-4" id="syncBtn">
+        <i class="bi bi-cloud-upload"></i> Sync Data
+      </button>
+      <p class="text-muted mt-2" id="syncStatus">Last synced: never</p>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// === Auralis Live Monitoring with Offline Support ===
+
+// Elements
+const heartEl = document.getElementById("heartRate");
+const respEl = document.getElementById("respRate");
+const activityEl = document.getElementById("activity");
+const syncBtn = document.getElementById("syncBtn");
+const syncStatus = document.getElementById("syncStatus");
+
+// Chart.js setup
+const ctx = document.getElementById("heartChart");
+const heartChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Heart Rate (bpm)',
+      data: [],
+      borderWidth: 2,
+      borderColor: '#2D6A4F',
+      fill: false,
+      tension: 0.4
+    }]
+  },
+  options: { animation: false, scales: { y: { beginAtZero: false } } }
+});
+
+// === IndexedDB Setup ===
+let db;
+const dbName = "AuralisOfflineDB";
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(dbName, 1);
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains("records")) {
+        db.createObjectStore("records", { keyPath: "timestamp" });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = (e) => reject(e);
+  });
+}
+
+async function saveRecord(data) {
+  db = db || await openDB();
+  const tx = db.transaction("records", "readwrite");
+  tx.objectStore("records").add(data);
+}
+
+// === Fetch & Update Data (every 2s) ===
+setInterval(() => {
+  fetch("{% url 'monitoring:live_data_api' %}")
+    .then(res => res.json())
+    .then(async data => {
+      heartEl.textContent = data.heart_rate;
+      respEl.textContent = data.resp_rate;
+      activityEl.textContent = data.activity;
+
+      // Update Chart
+      const now = new Date().toLocaleTimeString();
+      heartChart.data.labels.push(now);
+      heartChart.data.datasets[0].data.push(data.heart_rate);
+      if (heartChart.data.labels.length > 15) {
+        heartChart.data.labels.shift();
+        heartChart.data.datasets[0].data.shift();
+      }
+      heartChart.update();
+
+      // Save to IndexedDB if offline
+      if (!navigator.onLine) {
+        await saveRecord({
+          heart_rate: data.heart_rate,
+          resp_rate: data.resp_rate,
+          activity: data.activity,
+          timestamp: Date.now()
+        });
+        console.log("💾 Saved offline reading");
+      }
+    });
+}, 2000);
+
+// === Sync Logic ===
+async function syncOfflineData() {
+  db = db || await openDB();
+  const tx = db.transaction("records", "readonly");
+  const store = tx.objectStore("records");
+  const getAll = store.getAll();
+
+  getAll.onsuccess = async () => {
+    const records = getAll.result;
+    if (records.length === 0) return;
+
+    console.log(`🔁 Syncing ${records.length} records...`);
+    const res = await fetch("/api/sync/upload/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(records)
+    });
+
+    if (res.ok) {
+      const delTx = db.transaction("records", "readwrite");
+      delTx.objectStore("records").clear();
+      syncStatus.textContent = `Last synced: ${new Date().toLocaleTimeString()}`;
+      console.log("✅ Synced and cleared offline data");
+    }
+  };
+}
+
+// === Online/Offline Event Handling ===
+window.addEventListener("online", syncOfflineData);
+syncBtn.addEventListener("click", syncOfflineData);
+</script>
+{% endblock %}

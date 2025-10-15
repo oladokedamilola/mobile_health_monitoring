@@ -1,0 +1,25 @@
+{% extends 'base_monitor.html' %}
+{% block title %}Respiratory Rate Monitor{% endblock %}
+
+{% block content %}
+<div class="container py-4 text-center">
+  <h3 class="fw-bold mb-3 text-primary">🌬 Respiratory Rate Monitor</h3>
+  <p class="text-muted">Breathe normally while the system detects your respiratory pattern.</p>
+
+  <div class="display-3 fw-bold text-primary" id="rate">--</div>
+  <p class="text-muted">Breaths Per Minute</p>
+
+  <button id="startBtn" class="btn btn-primary mt-3 px-4">Start Monitoring</button>
+</div>
+
+<script>
+document.getElementById("startBtn").addEventListener("click", () => {
+  const rateDisplay = document.getElementById("rate");
+  setInterval(() => {
+    fetch("{% url 'monitoring:respiration_data_api' %}")
+      .then(res => res.json())
+      .then(data => rateDisplay.textContent = data.respiratory_rate);
+  }, 3000);
+});
+</script>
+{% endblock %}

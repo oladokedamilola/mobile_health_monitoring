@@ -1,0 +1,64 @@
+{% extends "base_monitor.html" %}
+{% load static %}
+{% block title %}Health Report - Auralis Health{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold">🩺 Health Report Summary</h4>
+    <button onclick="window.print()" class="btn btn-primary">
+      <i class="bi bi-printer"></i> Print Report
+    </button>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <h6 class="fw-bold text-primary">Patient Info</h6>
+      <p><strong>Name:</strong> {{ user.get_full_name }}</p>
+      <p><strong>Date Generated:</strong> {{ generated_on|date:"M d, Y" }}</p>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <h6 class="fw-bold text-success">Overall Summary</h6>
+      <p><strong>Average Heart Rate:</strong> {{ avg_heart_rate }} bpm</p>
+      <p><strong>Average Respiration:</strong> {{ avg_resp_rate }} /min</p>
+      <p><strong>Total Active Days:</strong> {{ active_days }}</p>
+      <p><strong>Anomalies Detected:</strong> {{ anomalies_count }}</p>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <h6 class="fw-bold text-info mb-3">Trend Overview</h6>
+      <canvas id="reportChart" height="100"></canvas>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx2 = document.getElementById('reportChart');
+  new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: {{ chart_labels|safe }},
+      datasets: [{
+        label: 'Heart Rate',
+        data: {{ heart_rate_data|safe }},
+        backgroundColor: '#007bff88'
+      },
+      {
+        label: 'Respiration',
+        data: {{ resp_rate_data|safe }},
+        backgroundColor: '#28a74588'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "base_monitor.html" %}
+{% load humanize %}
+
+{% block title %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">Welcome, Dr. {{ user.first_name|default:user.username }}</h2>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Total Patients</h6>
+          <h3>{{ total_patients }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Health Records</h6>
+          <h3>{{ total_records }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Anomalies</h6>
+          <h3>{{ total_anomalies }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Critical Alerts</h6>
+          <h3 class="text-danger">{{ critical_anomalies }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Anomalies -->
+  <div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-light fw-semibold">Recent Patient Anomalies</div>
+    <div class="card-body table-responsive">
+      {% if recent_anomalies %}
+      <table class="table align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Patient</th>
+            <th>Parameter</th>
+            <th>Value</th>
+            <th>Severity</th>
+            <th>Detected</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in recent_anomalies %}
+          <tr>
+            <td>{{ a.user.username }}</td>
+            <td>{{ a.get_parameter_display }}</td>
+            <td>{{ a.value }}</td>
+            <td>
+              <span class="badge
+                {% if a.severity == 'critical' %}bg-danger
+                {% elif a.severity == 'high' %}bg-warning text-dark
+                {% elif a.severity == 'moderate' %}bg-info
+                {% else %}bg-success{% endif %}">
+                {{ a.severity|title }}
+              </span>
+            </td>
+            <td>{{ a.detected_at|naturaltime }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="text-muted">No recent anomalies detected.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Health Summaries -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-light fw-semibold">Recent Health Summaries</div>
+    <div class="card-body table-responsive">
+      {% if recent_summaries %}
+      <table class="table align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Patient</th>
+            <th>Period</th>
+            <th>Avg. Heart Rate</th>
+            <th>Avg. Resp. Rate</th>
+            <th>Activity</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in recent_summaries %}
+          <tr>
+            <td>{{ s.user.username }}</td>
+            <td>{{ s.period_start|date:"M d" }} - {{ s.period_end|date:"M d, Y" }}</td>
+            <td>{{ s.average_heart_rate }}</td>
+            <td>{{ s.average_respiratory_rate }}</td>
+            <td>{{ s.activity_level|title }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="text-muted">No summaries found.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

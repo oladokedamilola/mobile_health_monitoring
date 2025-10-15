@@ -1,0 +1,56 @@
+{% load static %}
+<footer class="footer mt-auto py-5 text-white" style="background-color: #1B4332;">
+  <div class="container px-4">
+    <div class="row gy-4">
+      <!-- Brand Column -->
+      <div class="col-md-4">
+        <div class="d-flex align-items-center mb-2">
+          <img src="{% static 'images/logo-icon.svg' %}" alt="Auralis Health" width="36" height="36" class="me-2">
+          <h5 class="fw-bold mb-0 text-white">Auralis Health</h5>
+        </div>
+        <p class="small text-white-50 mb-0">
+          Listen to your body. Monitor, understand, and improve your wellbeing through data-driven insights.
+        </p>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="col-md-3">
+        <h6 class="fw-semibold text-uppercase mb-3 text-white-50">Quick Links</h6>
+        <ul class="list-unstyled mb-0">
+          <li><a href="{% url 'home' %}" class="footer-link">Home</a></li>
+          <li><a href="#" class="footer-link">Dashboard</a></li>
+          <li><a href="#" class="footer-link">Analytics</a></li>
+        </ul>
+      </div>
+
+      <!-- Legal -->
+      <div class="col-md-3">
+        <h6 class="fw-semibold text-uppercase mb-3 text-white-50">Legal</h6>
+        <ul class="list-unstyled mb-0">
+          <li><a href="#" class="footer-link">Privacy Policy</a></li>
+          <li><a href="#" class="footer-link">Terms of Use</a></li>
+          <li><a href="#" class="footer-link">Support</a></li>
+        </ul>
+      </div>
+
+      <!-- Social Links -->
+      <div class="col-md-2">
+        <h6 class="fw-semibold text-uppercase mb-3 text-white-50">Follow Us</h6>
+        <div class="d-flex gap-3">
+          <a href="#" class="social-link" aria-label="Twitter"><i class="bi bi-twitter"></i></a>
+          <a href="#" class="social-link" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="social-link" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+        </div>
+      </div>
+    </div>
+
+    <hr class="border-light opacity-25 my-4">
+
+    <!-- Bottom Footer -->
+    <div class="text-center">
+      <small class="text-white-50">
+        © 2025 Auralis Health — <em>Listen to Your Body.</em>
+      </small>
+    </div>
+  </div>
+</footer>

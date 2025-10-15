@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Auralis Health — Listen to Your Body{% endblock %}
+{% block content %}
+
+<!-- ===========================
+🌿 Hero Section
+=========================== -->
+<section class="hero position-relative text-center d-flex align-items-center"
+         style="background: url('{% static 'img/hero.jpeg' %}') center/cover no-repeat; min-height: 90vh;">
+  
+  <!-- Softer overlay to improve contrast -->
+  <div class="overlay position-absolute top-0 start-0 w-100 h-100"
+       style="background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.35), rgba(29, 65, 50, 0.55));"></div>
+
+  <div class="container position-relative z-2 text-white">
+    <h1 class="display-4 fw-bold mb-3 hero-title">
+      Listen to Your Body with <span class="brand-accent">Auralis</span>
+    </h1>
+    <p class="lead mb-4 hero-text">
+      Empowering you to understand your health patterns — anywhere, anytime.  
+      Track your heart rate, breathing, and activity using your device’s sensors.
+    </p>
+<div>
+      {% if user.is_authenticated %}
+        <a href="/dashboard/" class="btn btn-success btn-lg px-4 me-3">Open Dashboard</a>
+        <a href="/analytics/" class="btn btn-outline-light btn-lg px-4">View Analytics</a>
+      {% else %}
+        <a href="/accounts/login/" class="btn btn-success btn-lg px-4 me-3">Sign In</a>
+        <a href="#" 
+          class="btn btn-outline-light btn-lg px-4" 
+          data-bs-toggle="modal" 
+          data-bs-target="#roleSelectModal">
+          Create Account
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<style>
+.hero {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+}
+
+/* Title: crisp + glow effect */
+.hero-title {
+  color: #f9f9f9;
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(0, 0, 0, 0.9);
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+/* Subtext: bright and legible */
+.hero-text {
+  color: #f3f7f5;
+  text-shadow:
+    0 0 6px rgba(0, 0, 0, 0.7),
+    0 0 2px rgba(255, 255, 255, 0.15);
+  max-width: 700px;
+  margin: 0 auto;
+  font-size: 1.25rem;
+  line-height: 1.8;
+}
+
+/* Brand accent – minty luminous green */
+.brand-accent {
+  color: #9EF0B8;
+  text-shadow: 0 0 6px rgba(158, 240, 184, 0.7);
+  padding: 0 6px;
+  border-radius: 4px;
+}
+
+/* Buttons */
+.hero a.btn {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  font-weight: 500;
+}
+.hero a.btn:hover {
+  transform: translateY(-2px);
+  transition: 0.3s;
+}
+</style>
+
+
+
+
+<!-- ===========================
+💡 Why Auralis Section
+=========================== -->
+<section class="py-5 bg-light text-center">
+  <div class="container">
+    <h2 class="fw-bold mb-4">Why Auralis Health?</h2>
+    <p class="lead text-muted mb-5">
+      Auralis Health was built to make health monitoring intuitive, accessible, and intelligent — even without expensive hardware.
+    </p>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body">
+            <div class="mb-3 text-success fs-1"><i class="bi bi-heart-pulse"></i></div>
+            <h5 class="card-title">Continuous Monitoring</h5>
+            <p class="card-text text-muted">
+              Track your vital signs seamlessly using your smartphone’s built-in sensors — no wearables required.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body">
+            <div class="mb-3 text-success fs-1"><i class="bi bi-wifi-off"></i></div>
+            <h5 class="card-title">Works Offline</h5>
+            <p class="card-text text-muted">
+              Auralis is a Progressive Web App (PWA), so you can still record and analyze your health data offline.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body">
+            <div class="mb-3 text-success fs-1"><i class="bi bi-bar-chart-line"></i></div>
+            <h5 class="card-title">Personalized Insights</h5>
+            <p class="card-text text-muted">
+              Gain actionable insights from your data — see how your lifestyle affects your heart and breathing patterns.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===========================
+📊 Features Section
+=========================== -->
+<section class="py-5 text-center">
+  <div class="container">
+    <h2 class="fw-bold mb-4">Your Health, Simplified</h2>
+    <p class="lead text-muted mb-5">
+      Designed for both individuals and healthcare practitioners — Auralis makes real-time health tracking practical and private.
+    </p>
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <i class="bi bi-smartwatch fs-1 text-success mb-3"></i>
+            <h6 class="fw-semibold">Sensor-Based Tracking</h6>
+            <p class="small text-muted">Integrates with phone sensors and wearables to measure body signals accurately.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <i class="bi bi-shield-lock fs-1 text-success mb-3"></i>
+            <h6 class="fw-semibold">Secure by Design</h6>
+            <p class="small text-muted">Your data is encrypted and stored locally first — you control what’s shared.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <i class="bi bi-lightning fs-1 text-success mb-3"></i>
+            <h6 class="fw-semibold">Instant Feedback</h6>
+            <p class="small text-muted">Get real-time health feedback and early alerts when readings are abnormal.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <i class="bi bi-phone fs-1 text-success mb-3"></i>
+            <h6 class="fw-semibold">Installable App</h6>
+            <p class="small text-muted">Install on any device for a full-screen, app-like experience — no App Store needed.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+.bi {
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+.bi:hover {
+  transform: scale(1.2);
+  color: #198754; /* Bootstrap success green */
+}
+</style>
+
+
+<!-- ===========================
+💬 CTA Section
+=========================== -->
+<section class="py-5 text-center" style="background-color: #f8f9fa; color: var(--color-text);">
+  <div class="container">
+    <h2 class="fw-bold mb-3">Ready to start listening to your body?</h2>
+    <p class="lead mb-4">Join Auralis today and take control of your health journey.</p>
+    <a href="#" 
+       class="btn btn-success btn-lg px-5"
+       style="background-color: var(--color-primary); border: none;"
+       data-bs-toggle="modal" 
+       data-bs-target="#roleSelectModal">
+       Get Started
+    </a>
+  </div>
+</section>
+
+
+
+{% endblock %}

@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Register — Auralis Health{% endblock %}
+{% block content %}
+
+<style>
+  /* 🌿 Auralis Responsive Form Styles */
+  .password-wrapper {
+    position: relative;
+  }
+
+  .password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .password-toggle:hover {
+    color: var(--color-primary);
+  }
+
+  .password-rules {
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+
+  .password-rules ul {
+    padding-left: 1.2rem;
+  }
+
+  /* Responsive spacing and typography */
+  .register-section {
+    min-height: 100vh;
+    background-color: var(--color-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+
+  .register-card {
+    width: 100%;
+    max-width: 480px;
+    border-radius: 1.25rem;
+  }
+
+  .register-logo {
+    width: 60px;
+  }
+
+  @media (max-width: 576px) {
+    .register-card {
+      padding: 1.5rem !important;
+    }
+
+    .register-logo {
+      width: 50px;
+    }
+
+    .register-section {
+      padding: 1rem;
+      min-height: auto;
+    }
+
+    h4 {
+      font-size: 1.25rem;
+    }
+
+    .btn {
+      font-size: 0.95rem;
+      padding: 0.75rem;
+    }
+
+    .password-toggle {
+      right: 0.75rem;
+    }
+  }
+
+  @media (max-width: 400px) {
+    h4 {
+      font-size: 1.1rem;
+    }
+    .form-label {
+      font-size: 0.9rem;
+    }
+    input, select {
+      font-size: 0.9rem !important;
+    }
+  }
+</style>
+
+<section class="register-section">
+  <div class="card shadow-lg border-0 register-card p-4 my-4">
+    <div class="card-body p-0">
+
+      <!-- Logo and Heading -->
+      <div class="text-center mb-4">
+        <img src="{% static 'img/logo-icon.svg' %}" alt="Auralis Logo" class="register-logo mb-2">
+        <h4 class="fw-bold" style="color: var(--color-primary);">Create Your Account</h4>
+        <p class="text-muted small mb-0">Start tracking your health seamlessly.</p>
+      </div>
+
+      <!-- Registration Form -->
+      <form method="POST" action="" id="registerForm" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <!-- Username -->
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          {{ form.username }}
+          {% if form.username.errors %}
+            <div class="text-danger small">{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label class="form-label">Email Address</label>
+          {{ form.email }}
+          {% if form.email.errors %}
+            <div class="text-danger small">{{ form.email.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <div class="password-wrapper">
+            {{ form.password1 }}
+            <button type="button" class="password-toggle" data-target="id_password1">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          {% if form.password1.errors %}
+            <div class="text-danger small">{{ form.password1.errors.0 }}</div>
+          {% endif %}
+
+          <div id="password-rules-wrapper" class="password-rules mt-2" style="max-height: 0;">
+            <ul class="list-unstyled small" id="password-rules">
+              <li id="rule-length" class="text-danger">❌ At least 8 characters</li>
+              <li id="rule-uppercase" class="text-danger">❌ One uppercase letter</li>
+              <li id="rule-lowercase" class="text-danger">❌ One lowercase letter</li>
+              <li id="rule-number" class="text-danger">❌ One number</li>
+              <li id="rule-symbol" class="text-danger">❌ One special character</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mb-3">
+          <label class="form-label">Confirm Password</label>
+          <div class="password-wrapper">
+            {{ form.password2 }}
+            <button type="button" class="password-toggle" data-target="id_password2">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          <div id="password-match-feedback" class="small mt-1 text-muted"></div>
+          {% if form.password2.errors %}
+            <div class="text-danger small">{{ form.password2.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Role -->
+        {% if selected_role %}
+          <input type="hidden" name="role" value="{{ selected_role }}">
+          <div class="alert alert-success py-2 small mb-3 rounded-3" 
+               style="background-color: var(--color-light); border: none; color: var(--color-dark);">
+            You are registering as a <strong>{{ selected_role|title }}</strong>.
+          </div>
+        {% else %}
+          <div class="mb-3">
+            <label class="form-label">Register As</label>
+            {{ form.role }}
+            {% if form.role.errors %}
+              <div class="text-danger small">{{ form.role.errors.0 }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <!-- Submit -->
+        <button type="submit" id="registerBtn"
+                class="btn w-100 fw-semibold text-white py-2"
+                style="background-color: var(--color-primary); border: none; transition: var(--transition);"
+                disabled>
+          Register
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="text-center mt-3 small">
+        Already have an account? 
+        <a href="{% url 'accounts:login' %}" class="fw-semibold" style="color: var(--color-primary);">
+          Login
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+<script>
+  // 🌿 Toggle password visibility
+  document.querySelectorAll(".password-toggle").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const input = document.getElementById(btn.dataset.target);
+      const icon = btn.querySelector("i");
+      if (input.type === "password") {
+        input.type = "text";
+        icon.classList.replace("bi-eye", "bi-eye-slash");
+      } else {
+        input.type = "password";
+        icon.classList.replace("bi-eye-slash", "bi-eye");
+      }
+    });
+  });
+
+  // 🌿 Password validation logic
+  const passwordInput = document.getElementById("id_password1");
+  const confirmPasswordInput = document.getElementById("id_password2");
+  const rulesWrapper = document.getElementById("password-rules-wrapper");
+  const registerBtn = document.getElementById("registerBtn");
+  const matchFeedback = document.getElementById("password-match-feedback");
+
+  function validatePasswordStrength() {
+    const value = passwordInput.value;
+    const rules = {
+      length: value.length >= 8,
+      uppercase: /[A-Z]/.test(value),
+      lowercase: /[a-z]/.test(value),
+      number: /[0-9]/.test(value),
+      symbol: /[^A-Za-z0-9]/.test(value),
+    };
+
+    for (let [rule, passed] of Object.entries(rules)) {
+      const el = document.getElementById(`rule-${rule}`);
+      el.textContent = (passed ? "✅ " : "❌ ") + el.textContent.replace(/^[✅❌]\s*/, "");
+      el.classList.toggle("text-success", passed);
+      el.classList.toggle("text-danger", !passed);
+    }
+
+    return Object.values(rules).every(Boolean);
+  }
+
+  function checkPasswordMatch() {
+    if (!confirmPasswordInput.value) {
+      matchFeedback.textContent = "";
+      return false;
+    }
+    if (confirmPasswordInput.value === passwordInput.value) {
+      matchFeedback.textContent = "✅ Passwords match";
+      matchFeedback.classList.add("text-success");
+      matchFeedback.classList.remove("text-danger");
+      return true;
+    } else {
+      matchFeedback.textContent = "❌ Passwords do not match";
+      matchFeedback.classList.add("text-danger");
+      matchFeedback.classList.remove("text-success");
+      return false;
+    }
+  }
+
+  function updateRegisterButtonState() {
+    registerBtn.disabled = !(validatePasswordStrength() && checkPasswordMatch());
+  }
+
+  passwordInput.addEventListener("focus", () => rulesWrapper.style.maxHeight = rulesWrapper.scrollHeight + "px");
+  passwordInput.addEventListener("blur", () => rulesWrapper.style.maxHeight = "0");
+  passwordInput.addEventListener("input", updateRegisterButtonState);
+  confirmPasswordInput.addEventListener("input", updateRegisterButtonState);
+</script>
+
+{% endblock %}

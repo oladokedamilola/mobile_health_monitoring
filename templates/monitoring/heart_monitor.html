@@ -1,0 +1,25 @@
+{% extends 'base_monitor.html' %}
+{% block title %}Heart Rate Monitor{% endblock %}
+
+{% block content %}
+<div class="container py-4 text-center">
+  <h3 class="fw-bold mb-3 text-danger">💓 Heart Rate Monitor</h3>
+  <p class="text-muted">Keep still while we measure your heart rate.</p>
+
+  <div class="display-3 fw-bold text-danger" id="bpm">--</div>
+  <p class="text-muted">Beats Per Minute</p>
+
+  <button id="startBtn" class="btn btn-danger mt-3 px-4">Start Monitoring</button>
+</div>
+
+<script>
+document.getElementById("startBtn").addEventListener("click", () => {
+  const bpmDisplay = document.getElementById("bpm");
+  setInterval(() => {
+    fetch("{% url 'monitoring:heart_data_api' %}")
+      .then(res => res.json())
+      .then(data => bpmDisplay.textContent = data.heart_rate);
+  }, 2000);
+});
+</script>
+{% endblock %}
