@@ -1,0 +1,415 @@
+<!-- templates/dashboard/admin_dashboard.html -->
+{% extends "base_monitor.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Admin Dashboard — Auralis Health{% endblock %}
+
+{% block content %}
+<section class="py-4">
+  <div class="container mt-5 mb-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+      <div>
+        <h3 class="fw-bold text-primary">Admin Dashboard 🛡️</h3>
+        <p class="text-muted mb-0">Platform overview and quick access to management tools</p>
+      </div>
+      <div class="d-flex gap-2 mt-2">
+        <a href="{% url 'admin:index' %}" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-gear me-1"></i>Django Admin
+        </a>
+        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-person me-1"></i>My Profile
+        </a>
+      </div>
+    </div>
+
+    <!-- Admin Profile Card - OPTIMIZED FOR MOBILE -->
+    <div class="row justify-content-center mx-0 mx-md-2">
+      <div class="col-12 col-lg-10 col-xl-8 px-0">
+        <div class="card border-0 shadow-lg mx-2">
+          <div class="card-body p-3 p-md-4">
+            <div class="row align-items-center">
+              <!-- Profile Image Section - Hidden on mobile, shown on tablet/desktop -->
+              <div class="col-md-4 text-center d-none d-md-block">
+                <div class="position-relative d-inline-block">
+                  {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" 
+                         alt="Profile Picture" 
+                         class="rounded-circle shadow-sm profile-img" 
+                         style="object-fit: cover; border: 4px solid var(--color-light);">
+                  {% else %}
+                    <img src="{% static 'img/admin-avatar.jpg' %}" 
+                         alt="Admin Avatar" 
+                         class="rounded-circle shadow-sm profile-img" 
+                         style="border: 4px solid var(--color-light);">
+                  {% endif %}
+                  
+                  <!-- Admin Status Indicator -->
+                  <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-3 border-white" 
+                       style="width: 20px; height: 20px;" 
+                       title="Administrator Online">
+                  </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="mt-3">
+                  <a href="{% url 'admin:index' %}" class="btn btn-danger btn-sm me-2 mb-2">
+                    <i class="bi bi-shield-check me-1"></i>Admin Panel
+                  </a>
+                  <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary btn-sm mb-2">
+                    <i class="bi bi-pencil-square me-1"></i>Edit Profile
+                  </a>
+                </div>
+              </div>
+
+              <!-- Admin Details Section -->
+              <div class="col-12 col-md-8">
+                <!-- Mobile Profile Image & Actions -->
+                <div class="row align-items-center mb-3 d-md-none">
+                  <div class="col-4 text-center">
+                    <div class="position-relative d-inline-block">
+                      {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" 
+                             alt="Profile Picture" 
+                             class="rounded-circle shadow-sm mobile-profile-img" 
+                             style="object-fit: cover; border: 3px solid var(--color-light);">
+                      {% else %}
+                        <img src="{% static 'img/admin-avatar.jpg' %}" 
+                             alt="Admin Avatar" 
+                             class="rounded-circle shadow-sm mobile-profile-img" 
+                             style="border: 3px solid var(--color-light);">
+                      {% endif %}
+                      <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white" 
+                           style="width: 16px; height: 16px;" 
+                           title="Administrator Online">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <div class="d-flex flex-wrap gap-1">
+                      <a href="{% url 'admin:index' %}" class="btn btn-danger btn-xs flex-fill mb-1">
+                        <i class="bi bi-shield-check me-1"></i>Admin
+                      </a>
+                      <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary btn-xs flex-fill mb-1">
+                        <i class="bi bi-pencil-square me-1"></i>Edit
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Name and Role -->
+                <div class="text-center text-md-start mb-3">
+                  <h4 class="fw-bold text-primary mb-1">
+                    {% if user.get_full_name %}
+                      {{ user.get_full_name }}
+                    {% else %}
+                      {{ user.username }}
+                    {% endif %}
+                  </h4>
+                  <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-1 mb-2">
+                    <span class="badge bg-danger badge-sm">
+                      <i class="bi bi-shield-check me-1"></i>{{ user.get_role_display }}
+                    </span>
+                    <span class="badge bg-success badge-sm">
+                      <i class="bi bi-star-fill me-1"></i>Administrator
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Contact and System Info - Grid Layout for Mobile -->
+                <div class="row g-2 g-md-3">
+                  <!-- Email -->
+                  <div class="col-12 col-sm-6">
+                    <div class="info-item d-flex align-items-center p-2 rounded">
+                      <i class="bi bi-envelope-fill text-muted me-2 fs-6"></i>
+                      <div class="flex-grow-1">
+                        <small class="text-muted d-block">Email</small>
+                        <span class="fw-semibold text-break small">{{ user.email }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Phone -->
+                  <div class="col-12 col-sm-6">
+                    <div class="info-item d-flex align-items-center p-2 rounded">
+                      <i class="bi bi-telephone-fill text-muted me-2 fs-6"></i>
+                      <div class="flex-grow-1">
+                        <small class="text-muted d-block">Phone</small>
+                        <span class="fw-semibold small">{{ user.phone|default:"Not provided" }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Last Login -->
+                  <div class="col-12 col-sm-6">
+                    <div class="info-item d-flex align-items-center p-2 rounded">
+                      <i class="bi bi-clock-fill text-muted me-2 fs-6"></i>
+                      <div class="flex-grow-1">
+                        <small class="text-muted d-block">Last Login</small>
+                        <span class="fw-semibold small">{{ user.last_login|date:"M j, Y g:i A"|default:"Never" }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Member Since -->
+                  <div class="col-12 col-sm-6">
+                    <div class="info-item d-flex align-items-center p-2 rounded">
+                      <i class="bi bi-calendar-event-fill text-muted me-2 fs-6"></i>
+                      <div class="flex-grow-1">
+                        <small class="text-muted d-block">Member Since</small>
+                        <span class="fw-semibold small">{{ user.date_joined|date:"F j, Y" }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Admin Permissions -->
+                <div class="mt-3 pt-3 border-top">
+                  <h6 class="fw-semibold text-primary mb-2 text-center text-md-start small">
+                    <i class="bi bi-key-fill me-1"></i>Administrative Access
+                  </h6>
+                  <div class="d-flex flex-wrap gap-1 justify-content-center justify-content-md-start">
+                    <span class="badge bg-light text-dark border small py-1 px-2">User Management</span>
+                    <span class="badge bg-light text-dark border small py-1 px-2">System Monitoring</span>
+                    <span class="badge bg-light text-dark border small py-1 px-2">Data Analytics</span>
+                    <span class="badge bg-light text-dark border small py-1 px-2">Doctor Verification</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+          <div class="card-body text-center">
+            <div class="fs-2 text-primary mb-2"><i class="bi bi-people-fill"></i></div>
+            <h6 class="text-muted">Total Users</h6>
+            <h2 class="fw-bold text-primary">{{ total_users }}</h2>
+            <small class="text-success">+{{ recent_users }} this week</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+          <div class="card-body text-center">
+            <div class="fs-2 text-success mb-2"><i class="bi bi-person-check"></i></div>
+            <h6 class="text-muted">Patients</h6>
+            <h2 class="fw-bold text-success">{{ total_patients }}</h2>
+            <small class="text-muted">Active users</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+          <div class="card-body text-center">
+            <div class="fs-2 text-info mb-2"><i class="bi bi-heart-pulse"></i></div>
+            <h6 class="text-muted">Doctors</h6>
+            <h2 class="fw-bold text-info">{{ total_doctors }}</h2>
+            <small class="text-success">{{ verified_doctors }} verified</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+          <div class="card-body text-center">
+            <div class="fs-2 text-warning mb-2"><i class="bi bi-activity"></i></div>
+            <h6 class="text-muted">Today's Activity</h6>
+            <h2 class="fw-bold text-warning">{{ recent_records }}</h2>
+            <small class="text-warning">{{ recent_anomalies }} anomalies</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Access Cards -->
+    <div class="row g-4">
+      <!-- User Management -->
+      <div class="col-lg-4 col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body text-center p-4">
+            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+              <i class="bi bi-people fs-2 text-primary"></i>
+            </div>
+            <h5 class="fw-bold">User Management</h5>
+            <p class="text-muted mb-3">Manage all users, patients, and doctors in the system</p>
+            <a href="{% url 'admin_user_management' %}" class="btn btn-primary">
+              <i class="bi bi-arrow-right me-2"></i>Manage Users
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Health Reports -->
+      <div class="col-lg-4 col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body text-center p-4">
+            <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+              <i class="bi bi-clipboard-data fs-2 text-info"></i>
+            </div>
+            <h5 class="fw-bold">Health Reports</h5>
+            <p class="text-muted mb-3">View detailed health records, anomalies, and summaries</p>
+            <a href="{% url 'admin_health_reports' %}" class="btn btn-info text-white">
+              <i class="bi bi-arrow-right me-2"></i>View Reports
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctor Verification -->
+      <div class="col-lg-4 col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body text-center p-4">
+            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+              <i class="bi bi-shield-check fs-2 text-warning"></i>
+            </div>
+            <h5 class="fw-bold">Doctor Verification</h5>
+            <p class="text-muted mb-3">Review and manage doctor verification requests</p>
+            <a href="{% url 'admin_doctor_verification' %}" class="btn btn-warning">
+              <i class="bi bi-arrow-right me-2"></i>Manage Verification
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Analytics -->
+      <div class="col-lg-4 col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body text-center p-4">
+            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+              <i class="bi bi-graph-up fs-2 text-success"></i>
+            </div>
+            <h5 class="fw-bold">System Analytics</h5>
+            <p class="text-muted mb-3">Platform analytics and performance metrics</p>
+            <a href="{% url 'admin_system_analytics' %}" class="btn btn-success">
+              <i class="bi bi-arrow-right me-2"></i>View Analytics
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Critical Alerts -->
+      <div class="col-lg-4 col-md-6">
+        <div class="card shadow-sm border-0 h-100 border-danger">
+          <div class="card-body text-center p-4">
+            <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+              <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
+            </div>
+            <h5 class="fw-bold text-danger">Critical Alerts</h5>
+            <p class="text-muted mb-3">Immediate attention required</p>
+            <div class="alert alert-danger mb-3">
+              <i class="bi bi-bell-fill me-2"></i>
+              <strong>{{ critical_anomalies }}</strong> critical anomalies
+            </div>
+            <a href="{% url 'admin_health_reports' %}?filter=critical" class="btn btn-danger">
+              <i class="bi bi-arrow-right me-2"></i>Review Now
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Django Admin -->
+      <div class="col-lg-4 col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body text-center p-4">
+            <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+              <i class="bi bi-tools fs-2 text-secondary"></i>
+            </div>
+            <h5 class="fw-bold">Advanced Tools</h5>
+            <p class="text-muted mb-3">Access Django admin for advanced system management</p>
+            <a href="{% url 'admin:index' %}" class="btn btn-secondary">
+              <i class="bi bi-arrow-right me-2"></i>Django Admin
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border-radius: 1rem;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+  }
+  
+  .btn {
+    border-radius: 0.75rem;
+    padding: 0.5rem 1.5rem;
+  }
+
+  /* Mobile-specific improvements */
+  @media (max-width: 768px) {
+    .profile-img {
+      width: 140px !important;
+      height: 140px !important;
+    }
+    
+    .mobile-profile-img {
+      width: 80px !important;
+      height: 80px !important;
+    }
+    
+    .card-body {
+      padding: 1.25rem !important;
+    }
+    
+    .btn-xs {
+      padding: 0.25rem 0.75rem !important;
+      font-size: 0.75rem !important;
+    }
+    
+    .badge-sm {
+      font-size: 0.7rem !important;
+      padding: 0.35rem 0.6rem !important;
+    }
+    
+    .info-item {
+      background-color: rgba(0,0,0,0.02);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .small {
+      font-size: 0.875rem !important;
+    }
+    
+    h4 {
+      font-size: 1.25rem !important;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .profile-img {
+      width: 160px !important;
+      height: 160px !important;
+    }
+  }
+
+  /* Ensure proper text breaking */
+  .text-break {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  /* Custom badge sizes */
+  .badge.small {
+    font-size: 0.75rem;
+  }
+</style>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+{% endblock %}

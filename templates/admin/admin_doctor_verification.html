@@ -1,0 +1,247 @@
+<!-- templates/dashboard/admin_doctor_verification.html -->
+{% extends "base_monitor.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Doctor Verification — Auralis Health{% endblock %}
+
+{% block content %}
+<section class="py-4">
+  <div class="container mt-5 mb-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+      <div>
+        <h3 class="fw-bold text-primary">
+          <i class="bi bi-shield-check me-2"></i>Doctor Verification
+        </h3>
+        <p class="text-muted mb-0">Review and manage doctor verification requests</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Verification Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0">
+          <div class="card-body text-center">
+            <div class="fs-2 text-info mb-2">{{ pending_doctors.count|add:verified_doctors.count }}</div>
+            <h6 class="text-muted">Total Doctors</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0">
+          <div class="card-body text-center">
+            <div class="fs-2 text-warning mb-2">{{ pending_doctors.count }}</div>
+            <h6 class="text-muted">Pending Verification</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0">
+          <div class="card-body text-center">
+            <div class="fs-2 text-success mb-2">{{ verified_doctors.count }}</div>
+            <h6 class="text-muted">Verified Doctors</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Verification -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-warning text-dark fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2"></i>Pending Verification Requests</span>
+        <span class="badge bg-warning text-dark">{{ pending_doctors.count }}</span>
+      </div>
+      <div class="card-body">
+        {% with total_doctors=pending_doctors.count|add:verified_doctors.count %}
+          {% if total_doctors == 0 %}
+            <!-- No doctors registered at all -->
+            <div class="text-center py-5">
+              <i class="bi bi-person-x text-muted fs-1 mb-3"></i>
+              <h5 class="text-muted mb-2">No Doctors Registered</h5>
+              <p class="text-muted mb-3">No doctors have created accounts yet. Doctor verification requests will appear here once they register.</p>
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <small>Doctors need to complete their profile and submit verification documents to appear here.</small>
+              </div>
+            </div>
+          {% elif pending_doctors.count > 0 %}
+            <!-- Pending verifications exist -->
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-warning">
+                  <tr>
+                    <th>Doctor</th>
+                    <th>Contact</th>
+                    <th>Specialization</th>
+                    <th>Location</th>
+                    <th>Registration Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for doctor in pending_doctors %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <img src="
+                          {% if doctor.profile_picture %}
+                            {{ doctor.profile_picture.url }}
+                          {% else %}
+                            {% if doctor.gender == 'male' %}
+                              {% static 'img/male-avatar.png' %}
+                            {% elif doctor.gender == 'female' %}
+                              {% static 'img/female-avatar.png' %}
+                            {% else %}
+                              {% static 'img/default-avatar.png' %}
+                            {% endif %}
+                          {% endif %}" 
+                        class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
+                        <div>
+                          <div class="fw-semibold">Dr. {{ doctor.get_full_name|default:doctor.username }}</div>
+                          <small class="text-muted">@{{ doctor.username }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <small>{{ doctor.email }}</small><br>
+                      <small class="text-muted">{{ doctor.phone|default:"No phone" }}</small>
+                    </td>
+                    <td>
+                      <small>{{ doctor.bio|truncatewords:5|default:"Not specified" }}</small>
+                    </td>
+                    <td>
+                      <small>{{ doctor.location|default:"Not specified" }}</small>
+                    </td>
+                    <td>
+                      <small>{{ doctor.date_joined|date:"M j, Y" }}</small>
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-success" title="Approve">
+                          <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button class="btn btn-danger" title="Reject">
+                          <i class="bi bi-x-lg"></i>
+                        </button>
+                        <a href="{% url 'admin:accounts_customuser_change' doctor.id %}" class="btn btn-outline-primary" title="View Details">
+                          <i class="bi bi-eye"></i>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <!-- No pending verifications (but doctors exist) -->
+            <div class="text-center py-4">
+              <i class="bi bi-check-circle text-success fs-1 mb-3"></i>
+              <h5 class="text-success mb-2">All Doctors Verified</h5>
+              <p class="text-muted mb-3">All {{ verified_doctors.count }} doctor(s) in the system are verified and active.</p>
+              <div class="alert alert-success">
+                <i class="bi bi-patch-check me-2"></i>
+                <small>Great work! The verification queue is clear.</small>
+              </div>
+            </div>
+          {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+
+    <!-- Verified Doctors -->
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-success text-white fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-patch-check me-2"></i>Verified Doctors</span>
+        <span class="badge bg-light text-success">{{ verified_doctors.count }}</span>
+      </div>
+      <div class="card-body">
+        {% if verified_doctors %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-success">
+              <tr>
+                <th>Doctor</th>
+                <th>Contact</th>
+                <th>Location</th>
+                <th>Verification Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for doctor in verified_doctors %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <img src="
+                      {% if doctor.profile_picture %}
+                        {{ doctor.profile_picture.url }}
+                      {% else %}
+                        {% if doctor.gender == 'male' %}
+                          {% static 'img/male-avatar.png' %}
+                        {% elif doctor.gender == 'female' %}
+                          {% static 'img/female-avatar.png' %}
+                        {% else %}
+                          {% static 'img/default-avatar.png' %}
+                        {% endif %}
+                      {% endif %}" 
+                    class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
+                    <div>
+                      <div class="fw-semibold">Dr. {{ doctor.get_full_name|default:doctor.username }}</div>
+                      <small class="text-muted">@{{ doctor.username }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <small>{{ doctor.email }}</small><br>
+                  <small class="text-muted">{{ doctor.phone|default:"No phone" }}</small>
+                </td>
+                <td>
+                  <small>{{ doctor.location|default:"Not specified" }}</small>
+                </td>
+                <td>
+                  <small>{{ doctor.date_joined|date:"M j, Y" }}</small>
+                </td>
+                <td>
+                  <span class="badge bg-success">
+                    <i class="bi bi-patch-check me-1"></i>Verified
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+          <i class="bi bi-person-plus text-muted fs-1 mb-3"></i>
+          <p class="text-muted mb-0">No verified doctors yet</p>
+          <small class="text-muted">Verified doctors will appear here once approved</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .table th {
+    border-top: none;
+    font-weight: 600;
+  }
+  
+  .card {
+    border-radius: 1rem;
+  }
+  
+  .btn-group .btn {
+    border-radius: 0.375rem;
+  }
+</style>
+{% endblock %}

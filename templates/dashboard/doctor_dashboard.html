@@ -1,119 +1,362 @@
 {% extends "base_monitor.html" %}
 {% load humanize %}
+{% load static %}
 
-{% block title %}Doctor Dashboard{% endblock %}
+{% block title %}Doctor Dashboard — Auralis{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <h2 class="mb-4">Welcome, Dr. {{ user.first_name|default:user.username }}</h2>
+<section class="py-4">
+  <div class="container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+      <div>
+        <h3 class="fw-bold text-primary">Welcome, Dr. {{ user.first_name|default:user.username }} 👨‍⚕️</h3>
+        <p class="text-muted mb-0">Monitor your patients' health data and anomalies.</p>
+      </div>
+      <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary btn-sm mt-2 mt-md-0">
+        <i class="bi bi-gear"></i> Settings
+      </a>
+    </div>
 
-  <div class="row g-3 mb-4">
-    <div class="col-md-3">
-      <div class="card shadow-sm border-0">
-        <div class="card-body text-center">
-          <h6 class="text-muted">Total Patients</h6>
-          <h3>{{ total_patients }}</h3>
+    <!-- Doctor Profile Card -->
+    <div class="row justify-content-center mb-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-lg">
+          <div class="card-body p-4">
+            <div class="row align-items-center">
+              <!-- Doctor Details (Left Side) -->
+              <div class="col-md-8">
+                <div class="row g-3">
+                  <!-- Name and Role -->
+                  <div class="col-12">
+                    <h3 class="fw-bold text-primary mb-1">
+                      Dr. {% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}
+                    </h3>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <span class="badge bg-success fs-6">
+                        {{ user.get_role_display }}
+                      </span>
+                      {% if user.is_verified %}
+                        <span class="badge bg-primary fs-6">
+                          <i class="bi bi-patch-check-fill me-1"></i>Verified Doctor
+                        </span>
+                      {% else %}
+                        <span class="badge bg-warning text-dark fs-6">
+                          <i class="bi bi-clock me-1"></i>Verification Pending
+                        </span>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- Contact Information -->
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-envelope-fill text-muted me-2 fs-5"></i>
+                      <div>
+                        <small class="text-muted d-block">Email</small>
+                        <span class="fw-semibold">{{ user.email }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-telephone-fill text-muted me-2 fs-5"></i>
+                      <div>
+                        <small class="text-muted d-block">Phone</small>
+                        <span class="fw-semibold">{{ user.phone|default:"Not provided" }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Location and Date of Birth -->
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-geo-alt-fill text-muted me-2 fs-5"></i>
+                      <div>
+                        <small class="text-muted d-block">Location</small>
+                        <span class="fw-semibold">{{ user.location|default:"Not provided" }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-calendar-event-fill text-muted me-2 fs-5"></i>
+                      <div>
+                        <small class="text-muted d-block">Date of Birth</small>
+                        <span class="fw-semibold">
+                          {% if user.date_of_birth %}
+                            {{ user.date_of_birth|date:"F j, Y" }}
+                          {% else %}
+                            Not provided
+                          {% endif %}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Gender and Member Since -->
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-gender-ambiguous text-muted me-2 fs-5"></i>
+                      <div>
+                        <small class="text-muted d-block">Gender</small>
+                        <span class="fw-semibold">
+                          {% if user.gender %}
+                            {{ user.get_gender_display }}
+                          {% else %}
+                            Not specified
+                          {% endif %}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-clock-fill text-muted me-2 fs-5"></i>
+                      <div>
+                        <small class="text-muted d-block">Member Since</small>
+                        <span class="fw-semibold">{{ user.date_joined|date:"F j, Y" }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Bio if available -->
+                  {% if user.bio %}
+                  <div class="col-12">
+                    <div class="mt-3">
+                      <h6 class="fw-semibold text-primary mb-2">
+                        <i class="bi bi-person-lines-fill me-2"></i>Professional Bio
+                      </h6>
+                      <p class="text-muted mb-0 lh-sm">{{ user.bio }}</p>
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Profile Image (Right Side) -->
+              <div class="col-md-4 text-center">
+                <div class="position-relative d-inline-block">
+                  {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" 
+                         alt="Profile Picture" 
+                         class="rounded-circle shadow-sm" 
+                         width="160" 
+                         height="160" 
+                         style="object-fit: cover; border: 4px solid var(--color-light);">
+                  {% else %}
+                    {% if user.gender == 'male' %}
+                      <img src="{% static 'img/male-avatar.jpg' %}" 
+                           alt="Male Avatar" 
+                           class="rounded-circle shadow-sm" 
+                           width="160"
+                           style="border: 4px solid var(--color-light);">
+                    {% elif user.gender == 'female' %}
+                      <img src="{% static 'img/female-avatar.jpg' %}" 
+                           alt="Female Avatar" 
+                           class="rounded-circle shadow-sm" 
+                           width="160"
+                           style="border: 4px solid var(--color-light);">
+                    {% else %}
+                      <img src="{% static 'img/default-avatar.jpg' %}" 
+                           alt="Default Avatar" 
+                           class="rounded-circle shadow-sm" 
+                           width="160"
+                           style="border: 4px solid var(--color-light);">
+                    {% endif %}
+                  {% endif %}
+                  
+                  <!-- Online Status Indicator -->
+                  <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-3 border-white" 
+                       style="width: 20px; height: 20px;" 
+                       title="Online">
+                  </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="mt-3">
+                  <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary btn-sm me-2 mb-2">
+                    <i class="bi bi-pencil-square me-1"></i>Edit Profile
+                  </a>
+                  <a href="{% url 'monitoring:live_monitoring' %}" class="btn btn-outline-success btn-sm mb-2">
+                    <i class="bi bi-broadcast-pin me-1"></i>Live Monitor
+                  </a>
+                  {% if not user.is_verified %}
+                    <a href="{% url 'accounts:doctor_verification' %}" class="btn btn-warning btn-sm d-block">
+                      <i class="bi bi-shield-check me-1"></i>Complete Verification
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card shadow-sm border-0">
-        <div class="card-body text-center">
-          <h6 class="text-muted">Health Records</h6>
-          <h3>{{ total_records }}</h3>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body text-center">
+            <div class="fs-3 text-primary mb-2"><i class="bi bi-people-fill"></i></div>
+            <h6 class="text-muted">Total Patients</h6>
+            <h3 class="fw-bold">{{ total_patients }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body text-center">
+            <div class="fs-3 text-info mb-2"><i class="bi bi-heart-pulse"></i></div>
+            <h6 class="text-muted">Health Records</h6>
+            <h3 class="fw-bold">{{ total_records|intcomma }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body text-center">
+            <div class="fs-3 text-warning mb-2"><i class="bi bi-exclamation-triangle"></i></div>
+            <h6 class="text-muted">Total Anomalies</h6>
+            <h3 class="fw-bold">{{ total_anomalies|intcomma }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body text-center">
+            <div class="fs-3 text-danger mb-2"><i class="bi bi-bell-fill"></i></div>
+            <h6 class="text-muted">Critical Alerts</h6>
+            <h3 class="fw-bold text-danger">{{ critical_anomalies|intcomma }}</h3>
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card shadow-sm border-0">
-        <div class="card-body text-center">
-          <h6 class="text-muted">Anomalies</h6>
-          <h3>{{ total_anomalies }}</h3>
-        </div>
+
+    <!-- Recent Anomalies -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-light fw-semibold">
+        <i class="bi bi-exclamation-triangle me-2"></i>Recent Patient Anomalies
+      </div>
+      <div class="card-body table-responsive">
+        {% if recent_anomalies %}
+        <table class="table align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Patient</th>
+              <th>Parameter</th>
+              <th>Value</th>
+              <th>Severity</th>
+              <th>Detected</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in recent_anomalies %}
+            <tr>
+              <td>
+                <strong>{{ a.user.get_full_name|default:a.user.username }}</strong>
+                <br>
+                <small class="text-muted">{{ a.user.email }}</small>
+              </td>
+              <td>{{ a.get_parameter_display }}</td>
+              <td>{{ a.value|floatformat:1 }}</td>
+              <td>
+                <span class="badge 
+                  {% if a.severity == 'critical' %}bg-danger
+                  {% elif a.severity == 'high' %}bg-warning text-dark
+                  {% elif a.severity == 'moderate' %}bg-info
+                  {% else %}bg-success{% endif %}">
+                  {{ a.severity|title }}
+                </span>
+              </td>
+              <td>{{ a.detected_at|naturaltime }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted mb-0">No recent anomalies detected.</p>
+        {% endif %}
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card shadow-sm border-0">
-        <div class="card-body text-center">
-          <h6 class="text-muted">Critical Alerts</h6>
-          <h3 class="text-danger">{{ critical_anomalies }}</h3>
-        </div>
+
+    <!-- Recent Health Summaries -->
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-light fw-semibold">
+        <i class="bi bi-clipboard-data me-2"></i>Recent Health Summaries
+      </div>
+      <div class="card-body table-responsive">
+        {% if recent_summaries %}
+        <table class="table align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Patient</th>
+              <th>Period</th>
+              <th>Avg. Heart Rate</th>
+              <th>Avg. Resp. Rate</th>
+              <th>Activity Level</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in recent_summaries %}
+            <tr>
+              <td>
+                <strong>{{ s.user.get_full_name|default:s.user.username }}</strong>
+                <br>
+                <small class="text-muted">{{ s.user.email }}</small>
+              </td>
+              <td>{{ s.period_start|date:"M d" }} – {{ s.period_end|date:"M d, Y" }}</td>
+              <td>{{ s.average_heart_rate|floatformat:1 }} bpm</td>
+              <td>{{ s.average_respiratory_rate|floatformat:1 }} rpm</td>
+              <td>
+                <span class="badge bg-light text-dark">{{ s.activity_level|title }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted mb-0">No health summaries available yet.</p>
+        {% endif %}
       </div>
     </div>
   </div>
+</section>
 
-  <!-- Recent Anomalies -->
-  <div class="card mb-4 shadow-sm border-0">
-    <div class="card-header bg-light fw-semibold">Recent Patient Anomalies</div>
-    <div class="card-body table-responsive">
-      {% if recent_anomalies %}
-      <table class="table align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Patient</th>
-            <th>Parameter</th>
-            <th>Value</th>
-            <th>Severity</th>
-            <th>Detected</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for a in recent_anomalies %}
-          <tr>
-            <td>{{ a.user.username }}</td>
-            <td>{{ a.get_parameter_display }}</td>
-            <td>{{ a.value }}</td>
-            <td>
-              <span class="badge
-                {% if a.severity == 'critical' %}bg-danger
-                {% elif a.severity == 'high' %}bg-warning text-dark
-                {% elif a.severity == 'moderate' %}bg-info
-                {% else %}bg-success{% endif %}">
-                {{ a.severity|title }}
-              </span>
-            </td>
-            <td>{{ a.detected_at|naturaltime }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
-      <p class="text-muted">No recent anomalies detected.</p>
-      {% endif %}
-    </div>
-  </div>
+<!-- Custom Styling for the Profile Card -->
+<style>
+  .card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 1rem;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+  
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+  }
+  
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .text-primary {
+    color: var(--color-primary) !important;
+  }
+  
+  .border-light {
+    border-color: var(--color-light) !important;
+  }
+</style>
 
-  <!-- Recent Health Summaries -->
-  <div class="card shadow-sm border-0">
-    <div class="card-header bg-light fw-semibold">Recent Health Summaries</div>
-    <div class="card-body table-responsive">
-      {% if recent_summaries %}
-      <table class="table align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Patient</th>
-            <th>Period</th>
-            <th>Avg. Heart Rate</th>
-            <th>Avg. Resp. Rate</th>
-            <th>Activity</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for s in recent_summaries %}
-          <tr>
-            <td>{{ s.user.username }}</td>
-            <td>{{ s.period_start|date:"M d" }} - {{ s.period_end|date:"M d, Y" }}</td>
-            <td>{{ s.average_heart_rate }}</td>
-            <td>{{ s.average_respiratory_rate }}</td>
-            <td>{{ s.activity_level|title }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
-      <p class="text-muted">No summaries found.</p>
-      {% endif %}
-    </div>
-  </div>
-</div>
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 {% endblock %}

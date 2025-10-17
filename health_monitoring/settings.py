@@ -1,14 +1,60 @@
 from pathlib import Path
 import os
+from decouple import config
+from datetime import timedelta
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# ==========================
+# 🔐 Security Keys
+# ==========================
+SECRET_KEY = config(
+    "DJANGO_SECRET_KEY",
+    default="unsafe-secret-key-change-in-production"
+)
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-r=6-(s501x_i1awz#_ql!@2y)^t7e*m-=(824v1y1rbhb&wy59'
+# ==========================
+# 📧 Email Settings
+# ==========================
+EMAIL_BACKEND = config(
+    "DJANGO_EMAIL_BACKEND",
+    default="django.core.mail.backends.smtp.EmailBackend"
+)
+EMAIL_HOST = config("DJANGO_EMAIL_HOST", default="smtp.gmail.com")
+EMAIL_PORT = config("DJANGO_EMAIL_PORT", cast=int, default=587)
+EMAIL_USE_TLS = config("DJANGO_EMAIL_USE_TLS", cast=bool, default=True)
+EMAIL_HOST_USER = config("DJANGO_EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = config("DJANGO_EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = config(
+    "DEFAULT_FROM_EMAIL",
+    default=f"Auralis Health <{EMAIL_HOST_USER}>"
+)
+
+
+# ==========================
+# 🍪 Session Settings
+# ==========================
+SESSION_ENGINE = config(
+    "SESSION_ENGINE",
+    default="django.contrib.sessions.backends.db"
+)
+SESSION_COOKIE_NAME = "sessionid"
+SESSION_COOKIE_AGE = config("SESSION_COOKIE_AGE", cast=int, default=3600)  # 1hr in seconds
+SESSION_SAVE_EVERY_REQUEST = config("SESSION_SAVE_EVERY_REQUEST", cast=bool, default=True)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = config("SESSION_EXPIRE_AT_BROWSER_CLOSE", cast=bool, default=True)
+
+# ==========================
+# ⏳ Token Expiry Times
+# ==========================
+OTP_EXPIRY_MINUTES = config("OTP_EXPIRY_MINUTES", cast=int, default=10)
+PASSWORD_RESET_TOKEN_EXPIRY_HOURS = config("PASSWORD_RESET_TOKEN_EXPIRY_HOURS", cast=int, default=1)
+
+# Helper variables for use in views/services
+OTP_EXPIRY_DELTA = timedelta(minutes=OTP_EXPIRY_MINUTES)
+PASSWORD_RESET_TOKEN_EXPIRY_DELTA = timedelta(hours=PASSWORD_RESET_TOKEN_EXPIRY_HOURS)
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -25,6 +71,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     
     # Third-party
     'rest_framework',

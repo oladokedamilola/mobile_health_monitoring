@@ -1,0 +1,4 @@
+py manage.py makemigrations accounts 
+analytics monitoring sync notifications
+
+python manage.py migrate

@@ -21,3 +21,5 @@ media/
 # Secrets
 .env
 .settings
+data.txt
+explanations.txt

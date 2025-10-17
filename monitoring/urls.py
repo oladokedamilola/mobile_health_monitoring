@@ -8,11 +8,8 @@ urlpatterns = [
     # ==========================================================
     # 🩺 CORE DASHBOARD & ANALYTICS
     # ==========================================================
-    path("", views.dashboard, name="dashboard"),
-    path("dashboard/", views.dashboard, name="dashboard"),
     path("logs/", views.logs, name="logs"),
-    # path("analytics/", views.analytics, name="analytics"),
-
+    
     # ==========================================================
     # ⚡ LIVE MONITORING (general + API)
     # ==========================================================

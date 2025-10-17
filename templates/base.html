@@ -37,6 +37,127 @@
   <!-- Navbar -->
   {% include 'includes/navbar.html' %}
 
+  <!-- Flash Messages -->
+<div class="position-fixed top-0 start-50 translate-middle-x mt-3 flash-messages-container" style="z-index: 1050; width: 350px; max-width: 90%;">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show text-center flash-message" 
+                 role="alert" 
+                 data-bs-delay="7000">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="flex-grow-1 me-2">
+                        {{ message }}
+                    </div>
+                    <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div class="progress mt-2" style="height: 3px;">
+                    <div class="progress-bar progress-bar-animated" style="width: 100%;"></div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<style>
+.flash-messages-container {
+    pointer-events: none;
+}
+
+.flash-message {
+    pointer-events: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: none;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    animation: slideInDown 0.3s ease-out;
+}
+
+.flash-message.fade-out {
+    animation: slideOutUp 0.3s ease-in forwards;
+}
+
+.flash-message .progress {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.flash-message .progress-bar {
+    border-radius: 10px;
+    animation: progressShrink 7s linear forwards;
+}
+
+/* Alert color enhancements */
+.alert-success {
+    background: linear-gradient(135deg, #d1fae5, #ecfdf5);
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.alert-error,
+.alert-danger {
+    background: linear-gradient(135deg, #fee2e2, #fef2f2);
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fef3c7, #fffbeb);
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #dbeafe, #eff6ff);
+    color: #1e40af;
+    border-left: 4px solid #3b82f6;
+}
+
+/* Animations */
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutUp {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+}
+
+@keyframes progressShrink {
+    from {
+        width: 100%;
+    }
+    to {
+        width: 0%;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .flash-messages-container {
+        width: 95% !important;
+    }
+    
+    .flash-message {
+        font-size: 0.9rem;
+        padding: 0.75rem;
+    }
+}
+</style>
+
+
   <!-- Page Content -->
   <main class="flex-grow-1">
     {% block content %}{% endblock %}
@@ -150,6 +271,73 @@
     };
   </script>
 
+
+
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-dismiss flash messages after 7 seconds
+    const flashMessages = document.querySelectorAll('.flash-message');
+    
+    flashMessages.forEach(message => {
+        const progressBar = message.querySelector('.progress-bar');
+        
+        // Start the progress bar animation
+        if (progressBar) {
+            progressBar.style.animation = 'progressShrink 7s linear forwards';
+        }
+        
+        // Set timeout to remove the message
+        const dismissTimer = setTimeout(() => {
+            dismissMessage(message);
+        }, 7000);
+        
+        // Add click event to close button
+        const closeButton = message.querySelector('.btn-close');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                clearTimeout(dismissTimer);
+                dismissMessage(message);
+            });
+        }
+        
+        // Pause progress on hover
+        message.addEventListener('mouseenter', () => {
+            if (progressBar) {
+                progressBar.style.animationPlayState = 'paused';
+            }
+            clearTimeout(dismissTimer);
+        });
+        
+        // Resume progress when mouse leaves
+        message.addEventListener('mouseleave', () => {
+            if (progressBar) {
+                progressBar.style.animationPlayState = 'running';
+            }
+            // Restart the dismiss timer
+            setTimeout(() => {
+                dismissMessage(message);
+            }, 7000 - getCurrentProgress(progressBar));
+        });
+    });
+    
+    function dismissMessage(message) {
+        message.classList.add('fade-out');
+        setTimeout(() => {
+            if (message.parentNode) {
+                message.parentNode.removeChild(message);
+            }
+        }, 300);
+    }
+    
+    function getCurrentProgress(progressBar) {
+        const style = window.getComputedStyle(progressBar);
+        const width = parseFloat(style.width);
+        const parentWidth = parseFloat(window.getComputedStyle(progressBar.parentElement).width);
+        const progress = (width / parentWidth) * 7000;
+        return progress;
+    }
+});
+</script>
   <!-- Progressive Web App -->
   <script src="{% static 'js/register-sw.js' %}"></script>
   <script src="{% static 'js/install-prompt.js' %}"></script>

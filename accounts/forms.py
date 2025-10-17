@@ -1,5 +1,7 @@
 from django import forms
-from django.contrib.auth.models import User
+from .models import CustomUser
+import pycountry
+
 
 class RegisterForm(forms.Form):
     username = forms.CharField(
@@ -66,14 +68,47 @@ class LoginForm(forms.Form):
     )
 
 
+
+# accounts/forms.py
+import pycountry
+from django import forms
+from .models import CustomUser
+
 class ProfileForm(forms.ModelForm):
+    # Country field using pycountry
+    country = forms.ChoiceField(
+        choices=[('', 'Select Country')] + [(country.alpha_2, country.name) for country in pycountry.countries],
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'id': 'country-select'
+        })
+    )
+    
+    # Custom location field that combines with country
+    city = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your city'
+        })
+    )
+    
     class Meta:
-        model = User
-        fields = ['username', 'first_name', 'last_name']
+        model = CustomUser
+        fields = [
+            'username', 'first_name', 'last_name', 
+            'gender', 'phone', 'date_of_birth', 'profile_picture', 'bio'
+        ]
         labels = {
             'username': 'Username',
             'first_name': 'First Name',
             'last_name': 'Last Name',
+            'gender': 'Gender',
+            'phone': 'Phone Number',
+            'date_of_birth': 'Date of Birth',
+            'profile_picture': 'Profile Picture',
+            'bio': 'Bio',
         }
         widgets = {
             'username': forms.TextInput(attrs={
@@ -88,8 +123,61 @@ class ProfileForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Enter last name'
             }),
+            'gender': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '+1 (555) 123-4567'
+            }),
+            'date_of_birth': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'placeholder': 'YYYY-MM-DD'
+            }),
+            'bio': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Tell us a bit about yourself...'
+            }),
+            'profile_picture': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            }),
         }
-
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Initialize location fields from existing location data
+        if self.instance and self.instance.location:
+            location_parts = self.instance.location.split(', ')
+            if len(location_parts) > 1:
+                self.fields['city'].initial = location_parts[0]
+                self.fields['country'].initial = location_parts[1] if len(location_parts) > 1 else ''
+        
+        # Set gender choices
+        self.fields['gender'].choices = [('', 'Select Gender')] + list(self.fields['gender'].choices)[1:]
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        # Combine city and country into location
+        city = self.cleaned_data.get('city', '')
+        country_code = self.cleaned_data.get('country', '')
+        
+        if city and country_code:
+            country_name = dict(self.fields['country'].choices).get(country_code, '')
+            user.location = f"{city}, {country_name}"
+        elif city:
+            user.location = city
+        elif country_code:
+            country_name = dict(self.fields['country'].choices).get(country_code, '')
+            user.location = country_name
+        else:
+            user.location = ''
+            
+        if commit:
+            user.save()
+        return user
 
 from django import forms
 from .models import DoctorVerification
@@ -105,3 +193,49 @@ class DoctorVerificationForm(forms.ModelForm):
             'license_number': forms.TextInput(attrs={'class': 'form-control'}),
             'document': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }
+
+
+
+
+# Password Reset Forms
+class PasswordResetRequestForm(forms.Form):
+    email = forms.EmailField(
+        max_length=254,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your email address'
+        })
+    )
+
+class PasswordResetForm(forms.Form):
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'New password'
+        }),
+        min_length=8
+    )
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm new password'
+        })
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("Passwords don't match")
+        return password2
+
+    def save(self):
+        password = self.cleaned_data['password1']
+        self.user.set_password(password)
+        self.user.save()
+        return self.user

@@ -13,86 +13,148 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="icon" href="{% static 'images/fav-icon.png' %}" type="image/x-icon">
+
+    <!-- Favicon & Icons -->
+    <link rel="icon" href="{% static 'img/logo-icon.svg' %}" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/icon-180.png' %}">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
 </head>
 <body class="bg-light">
 
 <!-- Mobile Menu Toggle -->
-<button id="menu-toggle" class="btn btn-outline-primary d-lg-none m-3">
+<button id="menu-toggle" class="btn btn-outline-primary d-lg-none m-3 position-fixed" style="z-index: 1035;">
     <i class="bi bi-list"></i> Menu
 </button>
 
-<div class="d-flex">
+<div class="layout-wrapper">
     <!-- Sidebar -->
-    <nav id="sidebar" class="sidebar bg-dark text-white p-3">
-        <div class="d-flex justify-content-between align-items-center">
-            <h3 class="fw-bold sidebar-title mb-0">SignalTrackr</h3>
-            <button id="sidebar-close" class="btn btn-sm btn-warning d-lg-none">✖</button>
+    <nav id="sidebar" class="sidebar bg-dark text-white">
+        <div class="sidebar-header d-flex justify-content-between align-items-center p-3 border-bottom border-secondary">
+            <h3 class="fw-bold sidebar-title mb-0">Auralis Health</h3>
+            <button id="sidebar-close" class="btn btn-sm btn-warning d-lg-none">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
 
-        <ul class="nav flex-column mt-4">
-            <!-- Core Pages -->
-            <li class="nav-item mb-2">
-                <a href="{% url 'monitoring:dashboard' %}" class="nav-link text-white">
-                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
-                </a>
-            </li>
+        <!-- Scrollable Navigation Area -->
+        <div class="sidebar-content">
+            <ul class="nav flex-column mt-3 px-3 pb-3">
+                <!-- Core Pages -->
+                <li class="nav-item mb-2">
+                    <a href="{% url 'accounts:dashboard' %}" class="nav-link text-white">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </li>
 
-            <!-- Live Monitor -->
-            <li class="nav-item mb-2">
-                <a href="{% url 'monitoring:live_monitoring' %}" class="nav-link text-white">
-                    <i class="bi bi-broadcast-pin me-2"></i> Live Monitoring
-                </a>
-            </li>
+                <!-- Admin Specific Links -->
+                {% if user.role == 'admin' or user.is_superuser %}
+                <li class="nav-item mt-3 mb-2 text-uppercase text-secondary small">Admin Tools</li>
+                
+                <li class="nav-item mb-2">
+                    <a href="{% url 'admin_user_management' %}" class="nav-link text-white">
+                        <i class="bi bi-people me-2"></i> User Management
+                    </a>
+                </li>
+                
+                <li class="nav-item mb-2">
+                    <a href="{% url 'admin_health_reports' %}" class="nav-link text-white">
+                        <i class="bi bi-clipboard-data me-2"></i> Health Reports
+                    </a>
+                </li>
+                
+                <li class="nav-item mb-2">
+                    <a href="{% url 'admin_doctor_verification' %}" class="nav-link text-white">
+                        <i class="bi bi-shield-check me-2"></i> Doctor Verification
+                    </a>
+                </li>
+                
+                <li class="nav-item mb-2">
+                    <a href="{% url 'admin_system_analytics' %}" class="nav-link text-white">
+                        <i class="bi bi-graph-up me-2"></i> System Analytics
+                    </a>
+                </li>
+                {% endif %}
 
-            <!-- Individual Monitors -->
-            <li class="nav-item mt-3 mb-2 text-uppercase text-secondary small">Monitors</li>
+                <!-- Monitoring Links (All Roles) -->
+                <li class="nav-item mt-3 mb-2 text-uppercase text-secondary small">Monitoring</li>
 
-            <li class="nav-item mb-2">
-                <a href="{% url 'monitoring:heart_monitor' %}" class="nav-link text-white">
-                    <i class="bi bi-heart-pulse me-2"></i> Heart Rate
-                </a>
-            </li>
+                <li class="nav-item mb-2">
+                    <a href="{% url 'monitoring:live_monitoring' %}" class="nav-link text-white">
+                        <i class="bi bi-broadcast-pin me-2"></i> Live Monitoring
+                    </a>
+                </li>
 
-            <li class="nav-item mb-2">
-                <a href="{% url 'monitoring:respiration_monitor' %}" class="nav-link text-white">
-                    <i class="bi bi-wind me-2"></i> Respiration
-                </a>
-            </li>
+                <!-- Individual Monitors (Patients & Doctors) -->
+                {% if user.role == 'patient' or user.role == 'doctor' %}
+                <li class="nav-item mb-2">
+                    <a href="{% url 'monitoring:heart_monitor' %}" class="nav-link text-white">
+                        <i class="bi bi-heart-pulse me-2"></i> Heart Rate
+                    </a>
+                </li>
 
-            <li class="nav-item mb-2">
-                <a href="{% url 'monitoring:activity_monitor' %}" class="nav-link text-white">
-                    <i class="bi bi-person-walking me-2"></i> Activity
-                </a>
-            </li>
+                <li class="nav-item mb-2">
+                    <a href="{% url 'monitoring:respiration_monitor' %}" class="nav-link text-white">
+                        <i class="bi bi-wind me-2"></i> Respiration
+                    </a>
+                </li>
 
-            <!-- Logs and Analytics -->
-            <li class="nav-item mt-3 mb-2 text-uppercase text-secondary small">Data</li>
-            <li class="nav-item mb-2">
-                <a href="{% url 'monitoring:logs' %}" class="nav-link text-white">
-                    <i class="bi bi-journal-text me-2"></i> Logs
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a href="{% url 'monitoring:analytics' %}" class="nav-link text-white">
-                    <i class="bi bi-graph-up me-2"></i> Analytics
-                </a>
-            </li>
+                <li class="nav-item mb-2">
+                    <a href="{% url 'monitoring:activity_monitor' %}" class="nav-link text-white">
+                        <i class="bi bi-person-walking me-2"></i> Activity
+                    </a>
+                </li>
+                {% endif %}
 
-            <!-- Account / Logout -->
-            <li class="nav-item mt-4">
-                <a href="{% url 'logout' %}" class="nav-link text-warning">
-                    <i class="bi bi-box-arrow-right me-2"></i> Logout
-                </a>
-            </li>
-        </ul>
+                <!-- Data & Analytics -->
+                <li class="nav-item mt-3 mb-2 text-uppercase text-secondary small">Data</li>
+                
+                <li class="nav-item mb-2">
+                    <a href="{% url 'monitoring:logs' %}" class="nav-link text-white">
+                        <i class="bi bi-journal-text me-2"></i> Logs
+                    </a>
+                </li>
+                
+                {% if user.role == 'doctor' or user.role == 'admin' %}
+                <li class="nav-item mb-2">
+                    <a href="{% url 'analytics:report' %}" class="nav-link text-white">
+                        <i class="bi bi-graph-up me-2"></i> Analytics
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- Account Section -->
+                <li class="nav-item mt-3 mb-2 text-uppercase text-secondary small">Account</li>
+                
+                <li class="nav-item mb-2">
+                    <a href="{% url 'accounts:profile' %}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Profile
+                    </a>
+                </li>
+
+                <!-- Doctor Verification Link -->
+                {% if user.role == 'doctor' and not user.is_verified %}
+                <li class="nav-item mb-2">
+                    <a href="{% url 'accounts:doctor_verification' %}" class="nav-link text-warning">
+                        <i class="bi bi-shield-exclamation me-2"></i> Complete Verification
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- Logout -->
+                <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                    <a href="{% url 'accounts:logout' %}" class="nav-link logout-link">
+                        <i class="bi bi-box-arrow-right me-2"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
     </nav>
 
     <!-- Sidebar Overlay (mobile only) -->
     <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
     <!-- Main Content -->
-    <main class="flex-grow-1 p-4">
+    <main class="main-content">
         <!-- Flash Messages -->
         <div class="position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 1050; width: 350px; max-width: 90%;">
             {% if messages %}
@@ -128,71 +190,283 @@
     const toggleBtn = document.getElementById("menu-toggle");
     const closeBtn = document.getElementById("sidebar-close");
 
-    toggleBtn?.addEventListener("click", () => {
+    function openSidebar() {
         sidebar.classList.add("active");
         overlay.classList.add("active");
-    });
+        document.body.style.overflow = 'hidden';
+    }
 
-    closeBtn?.addEventListener("click", () => {
+    function closeSidebar() {
         sidebar.classList.remove("active");
         overlay.classList.remove("active");
+        document.body.style.overflow = '';
+    }
+
+    toggleBtn?.addEventListener("click", openSidebar);
+    closeBtn?.addEventListener("click", closeSidebar);
+    overlay?.addEventListener("click", closeSidebar);
+
+    // Close sidebar when clicking on a nav link on mobile
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth < 992) {
+                closeSidebar();
+            }
+        });
     });
 
-    overlay?.addEventListener("click", () => {
-        sidebar.classList.remove("active");
-        overlay.classList.remove("active");
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 992) {
+            closeSidebar();
+        }
+    });
+
+    // Set active link based on current URL
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.sidebar .nav-link:not(.logout-link)');
+        
+        navLinks.forEach(link => {
+            const linkPath = link.getAttribute('href');
+            if (currentPath === linkPath || (currentPath.startsWith(linkPath) && linkPath !== '/')) {
+                link.classList.add('active');
+            }
+        });
     });
 </script>
 
 <style>
     body {
         font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
     }
 
-    .sidebar {
-        width: 260px;
+    .layout-wrapper {
+        display: flex;
         min-height: 100vh;
-        transition: all 0.3s ease;
-        position: fixed;
-        top: 0; left: 0;
+    }
+
+    /* Desktop Sidebar (27% width) */
+    .sidebar {
+        width: 27%;
+        max-width: 320px;
+        min-height: 100vh;
+        transition: all 0.3s ease-in-out;
+        position: relative;
         z-index: 1040;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Scrollable content area for mobile/tablet */
+    .sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        &::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        &::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    }
+
+    /* Firefox scrollbar styling */
+    .sidebar-content {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
     }
 
     .sidebar .nav-link {
         border-radius: 0.5rem;
         padding: 0.6rem 1rem;
+        transition: all 0.2s ease;
     }
 
     .sidebar .nav-link:hover,
     .sidebar .nav-link.active {
         background-color: rgba(255, 255, 255, 0.15);
+        transform: translateX(4px);
     }
 
+    /* Active Link Styling */
+    .sidebar .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        color: var(--color-secondary) !important;
+        border-left: 4px solid var(--color-secondary);
+        padding-left: calc(1rem - 4px);
+        font-weight: 600;
+    }
+
+    .sidebar .nav-link.active i {
+        color: var(--color-secondary) !important;
+    }
+
+    /* Logout Link Styling */
+    .sidebar .nav-link.logout-link {
+        color: #dc3545 !important;
+        border-left: 4px solid transparent;
+    }
+
+    .sidebar .nav-link.logout-link:hover {
+        background-color: rgba(220, 53, 69, 0.15) !important;
+        color: #dc3545 !important;
+        border-left: 4px solid #dc3545;
+        padding-left: calc(1rem - 4px);
+    }
+
+    .sidebar .nav-link.logout-link i {
+        color: #dc3545 !important;
+    }
+
+    .sidebar .nav-link.logout-link:hover i {
+        color: #dc3545 !important;
+        transform: translateX(2px);
+        transition: transform 0.2s ease;
+    }
+
+    /* Enhanced hover effects for all links */
+    .sidebar .nav-link {
+        border-left: 4px solid transparent;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar .nav-link:hover:not(.logout-link):not(.active) {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-left: 4px solid rgba(255, 255, 255, 0.3);
+        padding-left: calc(1rem - 4px);
+        transform: translateX(4px);
+    }
+
+    /* Icon transitions */
+    .sidebar .nav-link i {
+        transition: all 0.3s ease;
+    }
+
+    .sidebar .nav-link:hover i {
+        transform: scale(1.1);
+    }
+
+    /* Main Content Area */
+    .main-content {
+        flex: 1;
+        padding: 2rem;
+        transition: all 0.3s ease-in-out;
+        width: 73%;
+        max-width: calc(100% - 320px);
+    }
+
+    /* Mobile Overlay */
     .sidebar-overlay {
         display: none;
         position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1030;
-    }
-
-    .sidebar.active {
+        top: 0;
         left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1035;
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
 
     .sidebar-overlay.active {
         display: block;
+        opacity: 1;
+    }
+
+    /* Tablet & Mobile Styles */
+    @media (max-width: 1199px) {
+        .sidebar {
+            width: 280px;
+        }
+        .main-content {
+            width: calc(100% - 280px);
+        }
     }
 
     @media (max-width: 991px) {
+        .layout-wrapper {
+            flex-direction: column;
+        }
+
         .sidebar {
             position: fixed;
-            left: -260px;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            transform: translateX(-100%);
+            z-index: 1040;
+            /* Enable scrolling on mobile/tablet */
+            overflow: hidden;
         }
+
         .sidebar.active {
+            transform: translateX(0);
             left: 0;
         }
+
+        /* Make sidebar content scrollable on mobile/tablet */
+        .sidebar-content {
+            overflow-y: auto;
+            max-height: calc(100vh - 70px); /* Subtract header height */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        }
+
+        .main-content {
+            width: 100%;
+            max-width: 100%;
+            padding: 1rem;
+            margin-left: 0;
+        }
+
+        /* Adjust main content padding to account for fixed menu toggle */
+        .main-content > .d-flex:first-child {
+            margin-top: 4rem;
+        }
+    }
+
+    @media (max-width: 575px) {
+        .sidebar {
+            width: 85%;
+            max-width: 300px;
+        }
+
+        .sidebar-content {
+            max-height: calc(100vh - 65px); /* Adjust for smaller header */
+        }
+
+        .main-content {
+            padding: 0.75rem;
+        }
+
+        #menu-toggle {
+            top: 1rem;
+            left: 1rem;
+        }
+    }
+
+    /* Smooth transitions for sidebar */
+    .sidebar {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    }
+
+    /* Prevent body scroll when sidebar is open on mobile */
+    body.sidebar-open {
+        overflow: hidden;
     }
 </style>
 

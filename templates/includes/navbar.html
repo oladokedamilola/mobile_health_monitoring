@@ -26,10 +26,10 @@
             <a class="nav-link text-white fw-medium px-3" href="#">Dashboard</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-white fw-medium px-3" href="{% url 'analytics:analytics' %}">Analytics</a>
+            <a class="nav-link text-white fw-medium px-3" href="{% url 'analytics:report' %}">Analytics</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-white fw-medium px-3" href="{% url 'notifications:notifications' %}">Notifications</a>
+            <a class="nav-link text-white fw-medium px-3" href="{% url 'notifications:notification-list' %}">Notifications</a>
           </li>
 
           <!-- User Dropdown -->
@@ -38,10 +38,10 @@
               <i class="bi bi-person-circle me-1"></i> {{ user.username|title }}
             </a>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-              <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Profile</a></li>
               <li><a class="dropdown-item" href="#">Settings</a></li>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Logout</a></li>
+              <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">Logout</a></li>
             </ul>
           </li>
         
