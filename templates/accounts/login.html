@@ -65,10 +65,13 @@
         {% csrf_token %}
         {{ form.non_field_errors }}
 
-        <!-- Email -->
+           <!-- Username or Email -->
         <div class="mb-3">
-          <label class="form-label fw-medium">Email</label>
-          {{ form.email }}
+            <label class="form-label">Username or Email</label>
+            {{ form.username_or_email }}
+            {% if form.username_or_email.errors %}
+                <div class="text-danger small">{{ form.username_or_email.errors.0 }}</div>
+            {% endif %}
         </div>
 
         <!-- Password -->
@@ -82,12 +85,6 @@
           </div>
         </div>
 
-        <!-- Remember Me -->
-        <div class="form-check mb-3">
-          <input class="form-check-input" type="checkbox" id="rememberMe">
-          <label class="form-check-label small" for="rememberMe">Remember Me</label>
-        </div>
-
         <!-- Submit -->
         <button type="submit" class="btn btn-success w-100 login-btn fw-semibold">
           Login
@@ -96,7 +93,7 @@
 
       <!-- Footer Links -->
       <div class="text-center mt-3 small">
-        <a href="{% url 'accounts:password_reset' %}" class="text-success d-block mb-1">Forgot password?</a>
+        <a href="{% url 'accounts:password_reset_request' %}" class="text-success d-block mb-1">Forgot password?</a>
         <span>New here? 
           <a href="#" 
             data-bs-toggle="modal" 

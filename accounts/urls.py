@@ -11,9 +11,9 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     
-    # Email Verification
+    # Email Verification - UPDATED
     path('verify-email/', views.verify_email_notice, name='verify_email_notice'),
-    path('verify-email/direct/', views.verify_email, name='verify_email'),
+    path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
     
     # Password Reset
     path('password-reset/', views.password_reset_request, name='password_reset_request'),
@@ -23,9 +23,7 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('dashboard/', views.dashboard_redirect, name='dashboard'),
     
-    
     # ✅ Doctor verification URLs
     path("doctor/verification/", views.doctor_verification, name="doctor_verification"),
     path("doctor/verification/status/", views.verification_status, name="verification_status"),
-    
 ]

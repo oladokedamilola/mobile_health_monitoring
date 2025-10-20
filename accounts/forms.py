@@ -52,11 +52,11 @@ class RegisterForm(forms.Form):
 
 
 class LoginForm(forms.Form):
-    email = forms.EmailField(
-        label="Email Address",
-        widget=forms.EmailInput(attrs={
+    username_or_email = forms.CharField(
+        label="Username or Email",
+        widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your email'
+            'placeholder': 'Enter your username or email'
         })
     )
     password = forms.CharField(
@@ -66,6 +66,43 @@ class LoginForm(forms.Form):
             'placeholder': 'Enter your password'
         })
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        username_or_email = cleaned_data.get('username_or_email')
+        password = cleaned_data.get('password')
+
+        if username_or_email and password:
+            # Import here to avoid circular imports
+            from django.contrib.auth import authenticate
+            from .models import CustomUser
+            
+            # Try to authenticate with the provided value as both username and email
+            user = authenticate(username=username_or_email, password=password)
+            
+            # If authentication fails, try to find by email and authenticate with username
+            if not user:
+                try:
+                    # Find user by email
+                    user_by_email = CustomUser.objects.get(email=username_or_email)
+                    user = authenticate(username=user_by_email.username, password=password)
+                except CustomUser.DoesNotExist:
+                    user = None
+                except CustomUser.MultipleObjectsReturned:
+                    # If multiple users with same email (shouldn't happen with proper constraints)
+                    user_by_email = CustomUser.objects.filter(email=username_or_email).first()
+                    if user_by_email:
+                        user = authenticate(username=user_by_email.username, password=password)
+                    else:
+                        user = None
+
+            if not user:
+                raise forms.ValidationError("Invalid username/email or password.")
+            
+            # Store the user instance for use in the view
+            cleaned_data['user'] = user
+
+        return cleaned_data
 
 
 

@@ -3,9 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .models import HealthSummary, Anomaly
 from .services.services import AnalyticsService
-
+from accounts.decorators import email_verification_required
 
 @login_required
+@email_verification_required
 def anomalies_view(request):
     """
     Displays a list of abnormal readings (flagged anomalies).
@@ -16,6 +17,7 @@ def anomalies_view(request):
 
 
 @login_required
+@email_verification_required
 def progress_view(request):
     """
     Displays the user's monthly health progress using AnalyticsService trends.
@@ -48,6 +50,7 @@ def progress_view(request):
 
 
 @login_required
+@email_verification_required
 def report_view(request):
     """
     Generates and displays a printable health report summary for the user.

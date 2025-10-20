@@ -6,12 +6,13 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import HealthRecord, ActivityRecord
 import random
-
+from accounts.decorators import email_verification_required
 
 # ==========================================================
 # 🩺 DASHBOARD VIEW
 # ==========================================================
 @login_required
+@email_verification_required
 def dashboard(request):
     """
     Main dashboard showing recent health and activity metrics.
@@ -34,6 +35,7 @@ def dashboard(request):
 # 💓 HEART RATE MONITOR
 # ==========================================================
 @login_required
+@email_verification_required
 def heart_monitor(request):
     """Page to capture or simulate heart rate."""
     return render(request, "monitoring/heart_monitor.html")
@@ -54,6 +56,7 @@ def heart_data_api(request):
 # 🌬 RESPIRATORY RATE MONITOR
 # ==========================================================
 @login_required
+@email_verification_required
 def respiration_monitor(request):
     """Page to measure or simulate respiratory rate."""
     return render(request, "monitoring/respiration_monitor.html")
@@ -74,6 +77,7 @@ def respiration_data_api(request):
 # 🚶 ACTIVITY MONITOR
 # ==========================================================
 @login_required
+@email_verification_required
 def activity_monitor(request):
     """Page to simulate or detect physical activity via accelerometer."""
     return render(request, "monitoring/activity_monitor.html")
@@ -96,6 +100,7 @@ def activity_data_api(request):
 # ⚡ LIVE COMBINED MONITOR
 # ==========================================================
 @login_required
+@email_verification_required
 def live_monitoring(request):
     """Displays unified live readings for heart, respiration, and activity."""
     return render(request, "monitoring/live_monitoring.html")
@@ -119,6 +124,7 @@ def live_data_api(request):
 # 🗂 LOGS VIEW
 # ==========================================================
 @login_required
+@email_verification_required
 def logs(request):
     """Displays all recorded logs with optional date filters."""
     start_date = request.GET.get('start_date')
@@ -160,6 +166,7 @@ def logs(request):
 # 🫁 SPO2 MONITOR
 # ==========================================================
 @login_required
+@email_verification_required
 def spo2_monitor(request):
     """Page for SpO₂ monitoring."""
     return render(request, "monitoring/spo2_monitor.html")
@@ -177,6 +184,7 @@ def spo2_data_api(request):
 # 🌙 SLEEP MONITOR
 # ==========================================================
 @login_required
+@email_verification_required
 def sleep_monitor(request):
     """Displays sleep tracker page."""
     return render(request, "monitoring/sleep_monitor.html")

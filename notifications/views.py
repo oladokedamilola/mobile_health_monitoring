@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Notification
 from .serializers import NotificationSerializer
 from .services.notification_service import NotificationService
+from accounts.decorators import email_verification_required
+
 
 class NotificationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -26,6 +28,7 @@ from django.shortcuts import render
 from .models import Notification
 
 @login_required
+@email_verification_required
 def notifications_view(request):
     """Render the notifications dashboard."""
     notifications = Notification.objects.filter(user=request.user).order_by("-created_at")

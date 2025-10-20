@@ -1,25 +1,304 @@
 {% extends 'base_monitor.html' %}
+{% load static %}
 {% block title %}Heart Rate Monitor{% endblock %}
 
 {% block content %}
-<div class="container py-4 text-center">
-  <h3 class="fw-bold mb-3 text-danger">💓 Heart Rate Monitor</h3>
-  <p class="text-muted">Keep still while we measure your heart rate.</p>
+<style>
+    .monitor-container {
+        min-height: 70vh;
+        background: linear-gradient(135deg, #fff5f5 0%, #fef7f7 100%);
+    }
+    
+    .gif-container {
+        max-width: 300px;
+        margin: 0 auto;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(220, 53, 69, 0.1);
+    }
+    
+    .heart-gif {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        transition: opacity 0.5s ease;
+    }
+    
+    .bpm-display {
+        font-size: 4rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #dc3545, #e74c3c);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .status-indicator {
+        padding: 0.5rem 1.5rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .status-waiting {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 2px solid #ffeaa7;
+    }
+    
+    .status-monitoring {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 2px solid #bee5eb;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-complete {
+        background-color: #d4edda;
+        color: #155724;
+        border: 2px solid #c3e6cb;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .btn-heart {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        border: none;
+        border-radius: 2rem;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+    
+    .btn-heart:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+    }
+    
+    .btn-heart:disabled {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .reading-quality {
+        font-size: 0.9rem;
+        padding: 0.25rem 1rem;
+        border-radius: 1rem;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+    
+    @media (max-width: 768px) {
+        .bpm-display {
+            font-size: 3rem;
+        }
+        
+        .gif-container {
+            max-width: 250px;
+        }
+        
+        .heart-gif {
+            height: 180px;
+        }
+    }
+</style>
 
-  <div class="display-3 fw-bold text-danger" id="bpm">--</div>
-  <p class="text-muted">Beats Per Minute</p>
+<div class="container py-4 monitor-container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 text-center">
+            
+            <!-- Header Section -->
+            <div class="mb-4">
+                <h1 class="fw-bold text-danger mb-2">💓 Heart Rate Monitor</h1>
+                <p class="text-muted lead">Real-time heart rate monitoring with visual feedback</p>
+            </div>
 
-  <button id="startBtn" class="btn btn-danger mt-3 px-4">Start Monitoring</button>
+            <!-- GIF Display Area -->
+            <div class="gif-container mb-4">
+                <img id="heartGif" class="heart-gif" 
+                     src="https://media.giphy.com/media/l4FGnTWu2hs4WY5gQ/giphy.gif" 
+                     alt="Heart Monitor Status">
+            </div>
+
+            <!-- Status Indicator -->
+            <div id="statusIndicator" class="status-indicator status-waiting d-inline-block mb-4">
+                <i class="bi bi-hourglass-split me-2"></i>
+                <span id="statusText">Ready to Start Monitoring</span>
+            </div>
+
+            <!-- BPM Display -->
+            <div class="mb-3">
+                <div id="bpm" class="bpm-display">--</div>
+                <p class="text-muted mb-2">Beats Per Minute</p>
+                <div id="qualityIndicator" class="reading-quality d-inline-block">
+                    <i class="bi bi-circle-fill text-success me-1"></i>
+                    <span id="qualityText">Stable reading</span>
+                </div>
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="mt-4">
+                <button id="startBtn" class="btn btn-heart me-2">
+                    <i class="bi bi-play-fill me-2"></i>
+                    Start Monitoring
+                </button>
+                <button id="stopBtn" class="btn btn-outline-secondary" disabled>
+                    <i class="bi bi-stop-fill me-2"></i>
+                    Stop
+                </button>
+            </div>
+
+            <!-- Instructions -->
+            <div class="mt-5 pt-4 border-top">
+                <h6 class="fw-semibold mb-3">📋 Monitoring Instructions</h6>
+                <div class="row text-start">
+                    <div class="col-md-6 mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Sit comfortably and stay still
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Keep your finger steady on sensor
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Breathe normally during monitoring
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Avoid sudden movements
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-document.getElementById("startBtn").addEventListener("click", () => {
-  const bpmDisplay = document.getElementById("bpm");
-  setInterval(() => {
-    fetch("{% url 'monitoring:heart_data_api' %}")
-      .then(res => res.json())
-      .then(data => bpmDisplay.textContent = data.heart_rate);
-  }, 2000);
+// GIF URLs for different states
+const gifs = {
+    waiting: "https://media.giphy.com/media/l4FGnTWu2hs4WY5gQ/giphy.gif", // Calm heart
+    monitoring: "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif", // Pulsing heart
+    complete: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Success heart
+    error: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif" // Error/issue
+};
+
+// State management
+let monitoringInterval = null;
+let isMonitoring = false;
+
+// DOM Elements
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const bpmDisplay = document.getElementById("bpm");
+const heartGif = document.getElementById("heartGif");
+const statusIndicator = document.getElementById("statusIndicator");
+const statusText = document.getElementById("statusText");
+const qualityIndicator = document.getElementById("qualityIndicator");
+const qualityText = document.getElementById("qualityText");
+
+// Update UI state
+function updateUIState(state, message) {
+    // Update GIF
+    heartGif.style.opacity = 0;
+    setTimeout(() => {
+        heartGif.src = gifs[state];
+        heartGif.style.opacity = 1;
+    }, 200);
+    
+    // Update status
+    statusText.textContent = message;
+    statusIndicator.className = `status-indicator status-${state} d-inline-block mb-4`;
+    
+    // Update button states
+    if (state === 'waiting') {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    } else if (state === 'monitoring') {
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+    } else if (state === 'complete') {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    }
+}
+
+// Simulate reading quality
+function updateReadingQuality(bpm) {
+    if (bpm === '--') {
+        qualityText.textContent = 'Waiting for reading';
+        qualityIndicator.className = 'reading-quality d-inline-block';
+        return;
+    }
+    
+    const bpmValue = parseInt(bpm);
+    if (bpmValue < 40 || bpmValue > 180) {
+        qualityText.textContent = 'Unreliable reading';
+        qualityIndicator.innerHTML = '<i class="bi bi-circle-fill text-danger me-1"></i>Unreliable reading';
+    } else if (bpmValue < 50 || bpmValue > 120) {
+        qualityText.textContent = 'Moderate quality';
+        qualityIndicator.innerHTML = '<i class="bi bi-circle-fill text-warning me-1"></i>Moderate quality';
+    } else {
+        qualityText.textContent = 'Good quality';
+        qualityIndicator.innerHTML = '<i class="bi bi-circle-fill text-success me-1"></i>Good quality';
+    }
+}
+
+// Start monitoring
+startBtn.addEventListener("click", () => {
+    isMonitoring = true;
+    updateUIState('monitoring', 'Monitoring in progress...');
+    
+    monitoringInterval = setInterval(() => {
+        fetch("{% url 'monitoring:heart_data_api' %}")
+            .then(res => res.json())
+            .then(data => {
+                bpmDisplay.textContent = data.heart_rate;
+                bpmDisplay.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    bpmDisplay.style.transform = 'scale(1)';
+                }, 200);
+                updateReadingQuality(data.heart_rate);
+            })
+            .catch(error => {
+                console.error('Error fetching heart rate:', error);
+                updateUIState('error', 'Monitoring error - please try again');
+                clearInterval(monitoringInterval);
+            });
+    }, 2000);
+});
+
+// Stop monitoring
+stopBtn.addEventListener("click", () => {
+    isMonitoring = false;
+    clearInterval(monitoringInterval);
+    updateUIState('complete', 'Monitoring completed');
+    
+    // Reset after 3 seconds
+    setTimeout(() => {
+        bpmDisplay.textContent = '--';
+        updateReadingQuality('--');
+        updateUIState('waiting', 'Ready to Start Monitoring');
+    }, 3000);
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    updateUIState('waiting', 'Ready to Start Monitoring');
+    updateReadingQuality('--');
 });
 </script>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 {% endblock %}

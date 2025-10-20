@@ -17,7 +17,8 @@ from datetime import timedelta
 from django.http import JsonResponse
 from django.conf import settings
 from .models import CustomUser
-from .utils import send_verification_email, verify_email_token, generate_password_reset_token, send_password_reset_email
+from .utils import send_verification_email, verify_email_token, send_password_reset_email, verify_password_reset_token, get_client_ip
+from .decorators import email_verification_required
 
 User = get_user_model()
 
@@ -54,11 +55,17 @@ def register_view(request, role=None):
                 )
                 # Send verification email after registration
                 if user:
-                    send_verification_email(user, request)
-                    messages.success(
-                        request, 
-                        "Registration successful! Please check your email to verify your account."
-                    )
+                    if send_verification_email(user, request):
+                        messages.success(
+                            request, 
+                            "Registration successful! Please check your email to verify your account."
+                        )
+                    else:
+                        messages.warning(
+                            request,
+                            "Registration successful, but we couldn't send the verification email. "
+                            "You can request a new verification link from your profile."
+                        )
                 return redirect('accounts:login')
             except Exception as e:
                 messages.error(request, f"Registration failed: {e}")
@@ -78,7 +85,7 @@ def register_view(request, role=None):
 @login_required
 def verify_email_notice(request):
     """
-    Email verification page
+    Email verification page - only shows verification link status
     """
     try:
         user = request.user
@@ -93,50 +100,33 @@ def verify_email_notice(request):
             if remaining > 60:
                 return render(request, "accounts/verification_cooldown.html", {"user": user})
 
-        # Determine or initialize method
-        method = request.session.get("email_verification_method")
-        if not method:
-            method = send_verification_email(user, request)
-            if not method:
+        # Send initial verification email if not already sent
+        if not user.email_verification_token:
+            if not send_verification_email(user, request):
                 messages.error(request, "⚠️ Could not send verification email. Please try again later.")
                 return redirect("accounts:dashboard")
-            request.session["email_verification_method"] = method
 
         # Handle RESEND
         if request.method == "POST" and "resend" in request.POST:
             if not user.can_resend_verification():
                 return render(request, "accounts/verification_cooldown.html", {"user": user})
-            sent_method = send_verification_email(user, request, method=method)
-            if sent_method:
-                messages.success(request, f"📧 A new verification {sent_method} has been sent to your email.")
+            
+            if send_verification_email(user, request):
+                messages.success(request, "📧 A new verification link has been sent to your email.")
                 if settings.DEBUG:
-                    if sent_method == "link":
-                        dev_link = request.build_absolute_uri(
-                            reverse("accounts:verify_email") + f"?token={user.email_verification_token}&email={user.email}"
-                        )
-                        messages.info(request, f"[DEV] Link: {dev_link}")
-                    else:
-                        messages.info(request, f"[DEV] Token: {user.email_verification_token}")
+                    # Show debug link in development - UPDATED to match new URL pattern
+                    debug_link = request.build_absolute_uri(
+                        reverse("accounts:verify_email", kwargs={"token": user.email_verification_token})
+                    )
+                    messages.info(request, f"[DEV] Verification Link: {debug_link}")
             else:
                 return render(request, "accounts/verification_cooldown.html", {"user": user})
 
-        # Handle TOKEN SUBMISSION
-        elif request.method == "POST" and method == "token":
-            submitted_token = request.POST.get("token", "").strip()
-            if not submitted_token:
-                messages.error(request, "❌ Please enter the token sent to your email.")
-            elif verify_email_token(submitted_token, user.email):
-                messages.success(request, "✅ Your email has been verified successfully!")
-                request.session.pop("email_verification_method", None)
-                return redirect("accounts:dashboard")
-            else:
-                messages.error(request, "❌ Invalid or expired token. Please try again.")
-
-        # For debug: show verification link
+        # Generate verification link for display - UPDATED to match new URL pattern
         verification_link = None
-        if method == "link" and user.email_verification_token:
+        if user.email_verification_token:
             verification_link = request.build_absolute_uri(
-                reverse("accounts:verify_email") + f"?token={user.email_verification_token}&email={user.email}"
+                reverse("accounts:verify_email", kwargs={"token": user.email_verification_token})
             )
 
         # Soft cooldown (frontend timer)
@@ -147,8 +137,6 @@ def verify_email_notice(request):
 
         return render(request, "accounts/verify_email.html", {
             "user": user,
-            "method": method,
-            "token_for_display": user.email_verification_token if method == "token" else None,
             "verification_link": verification_link,
             "countdown_seconds": countdown_seconds,
             "show_resend": True,
@@ -159,21 +147,24 @@ def verify_email_notice(request):
         messages.error(request, f"⚠️ An unexpected error occurred: {str(e)}")
         return redirect("accounts:dashboard")
 
-def verify_email(request):
+def verify_email(request, token=None):
     """
-    Verify the user email via direct token link
+    Verify the user email via direct verification link
+    UPDATED: Now uses URL parameter instead of query string
     """
-    token = request.GET.get("token")
-    email = request.GET.get("email")
-
-    if not token or not email:
+    # Support both URL pattern (token in URL) and legacy query string
+    if not token:
+        token = request.GET.get("token")
+    
+    if not token:
         messages.error(request, "❌ Invalid verification link.")
         return redirect("accounts:login")
 
-    if verify_email_token(token, email):
-        messages.success(request, "✅ Your email has been verified successfully! You can now log in.")
+    # UPDATED: Only pass token to the function (no email needed)
+    if verify_email_token(token):
+        messages.success(request, "✅ Your email has been verified successfully!")
     else:
-        messages.error(request, "❌ Verification failed or token expired.")
+        messages.error(request, "❌ Verification failed or link has expired.")
 
     return redirect("accounts:login")
 
@@ -214,14 +205,8 @@ def password_reset_request(request):
             # Log attempt
             PasswordResetAttempt.objects.create(user=user, ip_address=get_client_ip(request))
             
-            # Generate and save token
-            token = generate_password_reset_token()
-            # Invalidate any existing tokens
-            PasswordResetToken.objects.filter(user=user, used=False).update(used=True)
-            PasswordResetToken.objects.create(user=user, token=token)
-            
-            # Send email
-            if send_password_reset_email(user, token, request):
+            # Send password reset email
+            if send_password_reset_email(user, request):
                 messages.success(
                     request,
                     "✅ If an account exists with that email, we've sent a password reset link. Please check your inbox."
@@ -242,10 +227,11 @@ def password_reset_confirm(request, token):
     if request.user.is_authenticated:
         return redirect('accounts:dashboard')
         
-    reset_token = get_object_or_404(PasswordResetToken, token=token, used=False)
+    # Verify the reset token
+    reset_token = verify_password_reset_token(token)
     
-    if reset_token.is_expired():
-        messages.error(request, "❌ This reset link has expired.")
+    if not reset_token:
+        messages.error(request, "❌ This reset link is invalid or has expired.")
         return redirect("accounts:password_reset_request")
     
     if request.method == "POST":
@@ -263,16 +249,6 @@ def password_reset_confirm(request, token):
         "form": form,
         "token": token
     })
-
-def get_client_ip(request):
-    """Get client IP address"""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
-    
 
 # ------------------------------------------------------
 # 🏠 Dashboard Redirect View
@@ -306,15 +282,20 @@ def dashboard_redirect(request):
             )
             return redirect("accounts:verify_email_notice")
         
-        # 🛡️ ADMIN ROUTING - Check both role and superuser status
-        if user.role == "admin" or user.is_superuser or user.is_staff:
+        # 🛡️ ADMIN ROUTING - Check superuser/staff status FIRST (most important)
+        if user.is_superuser or user.is_staff:
             # Ensure superusers/staff have admin role set
-            if (user.is_superuser or user.is_staff) and user.role != "admin":
+            if user.role != "admin":
                 user.role = "admin"
                 user.save()
                 logger.info(f"Updated superuser/staff {user.username} role to 'admin'")
             
-            logger.info(f"Admin dashboard access: {user.username}")
+            logger.info(f"Admin dashboard access: {user.username} (superuser/staff)")
+            return redirect('admin_dashboard')
+        
+        # Check admin role for non-superuser admin users
+        elif user.role == "admin":
+            logger.info(f"Admin dashboard access: {user.username} (role=admin)")
             return redirect('admin_dashboard')
         
         # 🩺 DOCTOR ROUTING with comprehensive verification
@@ -433,7 +414,6 @@ def _handle_doctor_redirect(request, user):
         )
         return redirect("accounts:verification_status")
 
-
 # Health check endpoint for monitoring
 @login_required
 def dashboard_health_check(request):
@@ -463,7 +443,6 @@ def dashboard_health_check(request):
         })
     
     return JsonResponse(health_data)
-
 
 # ------------------------------------------------------
 # 📧 Email Verification Required Decorator
@@ -522,9 +501,10 @@ def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data.get('email')
-            password = form.cleaned_data.get('password')
-            user = authenticate(request, username=email, password=password)
+            # Get the authenticated user from the form's clean method
+            user = form.cleaned_data.get('user')
+            username_or_email = form.cleaned_data.get('username_or_email')
+            
             if user:
                 login(request, user)
                 messages.success(request, f"Welcome back, {user.username}!")
@@ -538,29 +518,28 @@ def login_view(request):
                     )
                     return redirect("accounts:verify_email_notice")
 
-                # 🔒 After login, check if doctor verification is required
-                if user.role == "doctor":
+                # Route based on user role
+                if user.role == "admin" or user.is_superuser or user.is_staff:
+                    return redirect("admin_dashboard")
+                elif user.role == "doctor":
                     from .models import DoctorVerification
                     verification = DoctorVerification.objects.filter(user=user).first()
 
                     if not verification:
                         return redirect("accounts:doctor_verification")
-
-                    if verification.status == "pending":
+                    elif verification.status == "pending":
                         return redirect("accounts:verification_status")
-
-                    if verification.status == "rejected":
+                    elif verification.status == "rejected":
                         messages.error(request, "Your verification was rejected. Please resubmit your details.")
                         return redirect("accounts:doctor_verification")
-
-                    # Approved doctor
-                    return redirect("doctor_dashboard")
-
-                # Normal patient user
-                return redirect("patient_dashboard")
+                    else:
+                        return redirect("doctor_dashboard")
+                else:
+                    return redirect("patient_dashboard")
 
             else:
-                messages.error(request, "Invalid email or password.")
+                # This shouldn't happen due to form validation, but just in case
+                messages.error(request, "Invalid username/email or password.")
     else:
         form = LoginForm()
 
@@ -910,6 +889,7 @@ def admin_system_analytics(request):
 # 👤 Profile View
 # ------------------------------------------------------
 @login_required
+@email_verification_required
 def profile_view(request):
     """Display and update user profile."""
     user = request.user

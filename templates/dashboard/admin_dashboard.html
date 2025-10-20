@@ -7,14 +7,14 @@
 
 {% block content %}
 <section class="py-4">
-  <div class="container mt-5 mb-5">
+  <div class="container mt-3 mb-5">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
       <div>
         <h3 class="fw-bold text-primary">Admin Dashboard 🛡️</h3>
         <p class="text-muted mb-0">Platform overview and quick access to management tools</p>
       </div>
-      <div class="d-flex gap-2 mt-2">
+      <div class="d-flex gap-2">
         <a href="{% url 'admin:index' %}" class="btn btn-outline-primary btn-sm">
           <i class="bi bi-gear me-1"></i>Django Admin
         </a>
@@ -24,29 +24,113 @@
       </div>
     </div>
 
-    <!-- Admin Profile Card - OPTIMIZED FOR MOBILE -->
-    <div class="row justify-content-center mx-0 mx-md-2">
-      <div class="col-12 col-lg-10 col-xl-8 px-0">
-        <div class="card border-0 shadow-lg mx-2">
-          <div class="card-body p-3 p-md-4">
+    <!-- Admin Profile Card - ORIGINAL DESKTOP STRUCTURE -->
+    <div class="row justify-content-center m-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-lg">
+          <div class="card-body p-4">
             <div class="row align-items-center">
-              <!-- Profile Image Section - Hidden on mobile, shown on tablet/desktop -->
-              <div class="col-md-4 text-center d-none d-md-block">
+              <!-- Admin Details (Left Side) - ORIGINAL -->
+              <div class="col-md-8">
+                <div class="row g-3">
+                  <!-- Name and Role -->
+                  <div class="col-12">
+                    <h3 class="fw-bold text-primary mb-1">
+                      {% if user.get_full_name %}
+                        {{ user.get_full_name }}
+                      {% else %}
+                        {{ user.username }}
+                      {% endif %}
+                    </h3>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <span class="badge bg-danger fs-6">
+                        <i class="bi bi-shield-check me-1"></i>{{ user.get_role_display }}
+                      </span>
+                      <span class="badge bg-success fs-6">
+                        <i class="bi bi-star-fill me-1"></i>System Administrator
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Contact Information -->
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-envelope-fill text-muted me-2 fs-5"></i>
+                      <div>
+                        <small class="text-muted d-block">Email</small>
+                        <span class="fw-semibold">{{ user.email }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-telephone-fill text-muted me-2 fs-5"></i>
+                      <div>
+                        <small class="text-muted d-block">Phone</small>
+                        <span class="fw-semibold">{{ user.phone|default:"Not provided" }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- System Access -->
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-clock-fill text-muted me-2 fs-5"></i>
+                      <div>
+                        <small class="text-muted d-block">Last Login</small>
+                        <span class="fw-semibold">{{ user.last_login|date:"M j, Y g:i A"|default:"Never" }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-calendar-event-fill text-muted me-2 fs-5"></i>
+                      <div>
+                        <small class="text-muted d-block">Member Since</small>
+                        <span class="fw-semibold">{{ user.date_joined|date:"F j, Y" }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Admin Permissions -->
+                  <div class="col-12">
+                    <div class="mt-2">
+                      <h6 class="fw-semibold text-primary mb-2">
+                        <i class="bi bi-key-fill me-2"></i>Administrative Access
+                      </h6>
+                      <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-light text-dark border">User Management</span>
+                        <span class="badge bg-light text-dark border">System Monitoring</span>
+                        <span class="badge bg-light text-dark border">Data Analytics</span>
+                        <span class="badge bg-light text-dark border">Doctor Verification</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Profile Image (Right Side) - ORIGINAL -->
+              <div class="col-md-4 text-center">
                 <div class="position-relative d-inline-block">
                   {% if user.profile_picture %}
                     <img src="{{ user.profile_picture.url }}" 
                          alt="Profile Picture" 
                          class="rounded-circle shadow-sm profile-img" 
+                         width="160" 
+                         height="160" 
                          style="object-fit: cover; border: 4px solid var(--color-light);">
                   {% else %}
                     <img src="{% static 'img/admin-avatar.jpg' %}" 
                          alt="Admin Avatar" 
                          class="rounded-circle shadow-sm profile-img" 
+                         width="160"
                          style="border: 4px solid var(--color-light);">
                   {% endif %}
                   
                   <!-- Admin Status Indicator -->
-                  <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-3 border-white" 
+                  <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-3 border-white status-indicator" 
                        style="width: 20px; height: 20px;" 
                        title="Administrator Online">
                   </div>
@@ -60,121 +144,6 @@
                   <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary btn-sm mb-2">
                     <i class="bi bi-pencil-square me-1"></i>Edit Profile
                   </a>
-                </div>
-              </div>
-
-              <!-- Admin Details Section -->
-              <div class="col-12 col-md-8">
-                <!-- Mobile Profile Image & Actions -->
-                <div class="row align-items-center mb-3 d-md-none">
-                  <div class="col-4 text-center">
-                    <div class="position-relative d-inline-block">
-                      {% if user.profile_picture %}
-                        <img src="{{ user.profile_picture.url }}" 
-                             alt="Profile Picture" 
-                             class="rounded-circle shadow-sm mobile-profile-img" 
-                             style="object-fit: cover; border: 3px solid var(--color-light);">
-                      {% else %}
-                        <img src="{% static 'img/admin-avatar.jpg' %}" 
-                             alt="Admin Avatar" 
-                             class="rounded-circle shadow-sm mobile-profile-img" 
-                             style="border: 3px solid var(--color-light);">
-                      {% endif %}
-                      <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white" 
-                           style="width: 16px; height: 16px;" 
-                           title="Administrator Online">
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-8">
-                    <div class="d-flex flex-wrap gap-1">
-                      <a href="{% url 'admin:index' %}" class="btn btn-danger btn-xs flex-fill mb-1">
-                        <i class="bi bi-shield-check me-1"></i>Admin
-                      </a>
-                      <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary btn-xs flex-fill mb-1">
-                        <i class="bi bi-pencil-square me-1"></i>Edit
-                      </a>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Name and Role -->
-                <div class="text-center text-md-start mb-3">
-                  <h4 class="fw-bold text-primary mb-1">
-                    {% if user.get_full_name %}
-                      {{ user.get_full_name }}
-                    {% else %}
-                      {{ user.username }}
-                    {% endif %}
-                  </h4>
-                  <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-1 mb-2">
-                    <span class="badge bg-danger badge-sm">
-                      <i class="bi bi-shield-check me-1"></i>{{ user.get_role_display }}
-                    </span>
-                    <span class="badge bg-success badge-sm">
-                      <i class="bi bi-star-fill me-1"></i>Administrator
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Contact and System Info - Grid Layout for Mobile -->
-                <div class="row g-2 g-md-3">
-                  <!-- Email -->
-                  <div class="col-12 col-sm-6">
-                    <div class="info-item d-flex align-items-center p-2 rounded">
-                      <i class="bi bi-envelope-fill text-muted me-2 fs-6"></i>
-                      <div class="flex-grow-1">
-                        <small class="text-muted d-block">Email</small>
-                        <span class="fw-semibold text-break small">{{ user.email }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Phone -->
-                  <div class="col-12 col-sm-6">
-                    <div class="info-item d-flex align-items-center p-2 rounded">
-                      <i class="bi bi-telephone-fill text-muted me-2 fs-6"></i>
-                      <div class="flex-grow-1">
-                        <small class="text-muted d-block">Phone</small>
-                        <span class="fw-semibold small">{{ user.phone|default:"Not provided" }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Last Login -->
-                  <div class="col-12 col-sm-6">
-                    <div class="info-item d-flex align-items-center p-2 rounded">
-                      <i class="bi bi-clock-fill text-muted me-2 fs-6"></i>
-                      <div class="flex-grow-1">
-                        <small class="text-muted d-block">Last Login</small>
-                        <span class="fw-semibold small">{{ user.last_login|date:"M j, Y g:i A"|default:"Never" }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Member Since -->
-                  <div class="col-12 col-sm-6">
-                    <div class="info-item d-flex align-items-center p-2 rounded">
-                      <i class="bi bi-calendar-event-fill text-muted me-2 fs-6"></i>
-                      <div class="flex-grow-1">
-                        <small class="text-muted d-block">Member Since</small>
-                        <span class="fw-semibold small">{{ user.date_joined|date:"F j, Y" }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Admin Permissions -->
-                <div class="mt-3 pt-3 border-top">
-                  <h6 class="fw-semibold text-primary mb-2 text-center text-md-start small">
-                    <i class="bi bi-key-fill me-1"></i>Administrative Access
-                  </h6>
-                  <div class="d-flex flex-wrap gap-1 justify-content-center justify-content-md-start">
-                    <span class="badge bg-light text-dark border small py-1 px-2">User Management</span>
-                    <span class="badge bg-light text-dark border small py-1 px-2">System Monitoring</span>
-                    <span class="badge bg-light text-dark border small py-1 px-2">Data Analytics</span>
-                    <span class="badge bg-light text-dark border small py-1 px-2">Doctor Verification</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -351,64 +320,357 @@
     padding: 0.5rem 1.5rem;
   }
 
-  /* Mobile-specific improvements */
+  /* MOBILE STYLES ONLY - Desktop remains completely untouched */
   @media (max-width: 768px) {
-    .profile-img {
-      width: 140px !important;
-      height: 140px !important;
+    /* Profile Card Mobile Optimization */
+    .profile-card-mobile {
+      margin: 0.5rem auto !important;
+      width: 95% !important;
+      max-width: 500px;
     }
     
-    .mobile-profile-img {
+    .profile-card-mobile .card-body {
+      padding: 1.5rem !important;
+    }
+    
+    /* Stack columns vertically on mobile */
+    .profile-card-mobile .row.align-items-center {
+      flex-direction: column;
+    }
+    
+    /* Move profile image to top on mobile */
+    .profile-image-mobile {
+      order: -1;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    
+    /* Smaller profile image on mobile */
+    .profile-img-mobile {
+      width: 100px !important;
+      height: 100px !important;
+    }
+    
+    /* Smaller status indicator on mobile */
+    .status-indicator-mobile {
+      width: 16px !important;
+      height: 16px !important;
+      bottom: 5px !important;
+      right: 5px !important;
+    }
+    
+    /* Center content on mobile */
+    .profile-content-mobile {
+      text-align: center;
+    }
+    
+    .profile-name-mobile {
+      font-size: 1.4rem;
+      text-align: center;
+      margin-bottom: 0.75rem !important;
+    }
+    
+    .role-badges-mobile {
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem !important;
+      margin-bottom: 1rem !important;
+    }
+    
+    .role-badge-mobile {
+      font-size: 0.8rem !important;
+      padding: 0.5rem 0.8rem;
+    }
+    
+    /* Compact info items on mobile */
+    .info-item-mobile {
+      padding: 0.6rem;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+      text-align: left;
+    }
+    
+    .info-icon-mobile {
+      font-size: 1rem !important;
+      min-width: 24px;
+    }
+    
+    .info-item-mobile small {
+      font-size: 0.75rem;
+    }
+    
+    .info-item-mobile .fw-semibold {
+      font-size: 0.85rem;
+    }
+    
+    /* Permissions section on mobile */
+    .permissions-mobile {
+      margin-top: 1rem !important;
+    }
+    
+    .permissions-mobile h6 {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem !important;
+    }
+    
+    .permission-badge-mobile {
+      font-size: 0.75rem;
+      padding: 0.4rem 0.7rem;
+    }
+    
+    /* Action buttons on mobile */
+    .action-buttons-mobile {
+      margin-top: 1rem !important;
+    }
+    
+    .action-btn-mobile {
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      margin: 0.1rem;
+    }
+    
+    /* Collapsible functionality for mobile */
+    .collapsible-section {
+      overflow: hidden;
+      transition: max-height 0.4s ease-in-out, opacity 0.3s ease;
+    }
+    
+    .collapsible-section.collapsed {
+      max-height: 0;
+      opacity: 0;
+    }
+    
+    .collapsible-section.expanded {
+      max-height: 1000px;
+      opacity: 1;
+    }
+    
+    /* Toggle button */
+    .toggle-btn {
+      width: 100%;
+      max-width: 200px;
+      margin: 1rem auto 0;
+      padding: 0.6rem 1.2rem;
+      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .toggle-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+  }
+
+  /* Small mobile devices */
+  @media (max-width: 576px) {
+    .profile-card-mobile .card-body {
+      padding: 1.25rem !important;
+    }
+    
+    .profile-img-mobile {
+      width: 90px !important;
+      height: 90px !important;
+    }
+    
+    .profile-name-mobile {
+      font-size: 1.3rem;
+    }
+    
+    .role-badge-mobile {
+      font-size: 0.75rem !important;
+      padding: 0.4rem 0.7rem;
+    }
+    
+    .info-item-mobile {
+      padding: 0.5rem;
+    }
+    
+    .permission-badge-mobile {
+      font-size: 0.7rem;
+      padding: 0.35rem 0.6rem;
+    }
+  }
+
+  /* Extra small devices */
+  @media (max-width: 400px) {
+    .profile-card-mobile {
+      margin: 0.25rem auto !important;
+      width: 98% !important;
+    }
+    
+    .profile-card-mobile .card-body {
+      padding: 1rem !important;
+    }
+    
+    .profile-img-mobile {
       width: 80px !important;
       height: 80px !important;
     }
     
-    .card-body {
-      padding: 1.25rem !important;
+    .profile-name-mobile {
+      font-size: 1.2rem;
     }
     
-    .btn-xs {
-      padding: 0.25rem 0.75rem !important;
-      font-size: 0.75rem !important;
+    .info-item-mobile {
+      padding: 0.4rem;
     }
     
-    .badge-sm {
-      font-size: 0.7rem !important;
-      padding: 0.35rem 0.6rem !important;
+    .info-item-mobile .fw-semibold {
+      font-size: 0.8rem;
     }
     
-    .info-item {
-      background-color: rgba(0,0,0,0.02);
-      border: 1px solid rgba(0,0,0,0.05);
+    .action-btn-mobile {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.75rem;
     }
-    
-    .small {
-      font-size: 0.875rem !important;
-    }
-    
-    h4 {
-      font-size: 1.25rem !important;
-    }
-  }
-
-  @media (min-width: 769px) {
-    .profile-img {
-      width: 160px !important;
-      height: 160px !important;
-    }
-  }
-
-  /* Ensure proper text breaking */
-  .text-break {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-  }
-  
-  /* Custom badge sizes */
-  .badge.small {
-    font-size: 0.75rem;
   }
 </style>
+
+<script>
+// Mobile-only functionality - only runs on mobile screens
+document.addEventListener('DOMContentLoaded', function() {
+  // Only apply mobile transformations if screen is mobile
+  if (window.innerWidth <= 768) {
+    const profileCard = document.querySelector('.card.border-0.shadow-lg');
+    if (profileCard) {
+      // Add mobile class to identify this card
+      profileCard.classList.add('profile-card-mobile');
+      
+      // Find and add mobile classes to elements
+      const profileImageCol = profileCard.querySelector('.col-md-4.text-center');
+      if (profileImageCol) {
+        profileImageCol.classList.add('profile-image-mobile');
+      }
+      
+      const profileImg = profileCard.querySelector('.profile-img');
+      if (profileImg) {
+        profileImg.classList.add('profile-img-mobile');
+      }
+      
+      const statusIndicator = profileCard.querySelector('.status-indicator');
+      if (statusIndicator) {
+        statusIndicator.classList.add('status-indicator-mobile');
+      }
+      
+      const profileContent = profileCard.querySelector('.col-md-8');
+      if (profileContent) {
+        profileContent.classList.add('profile-content-mobile');
+      }
+      
+      const profileName = profileCard.querySelector('.fw-bold.text-primary.mb-1');
+      if (profileName) {
+        profileName.classList.add('profile-name-mobile');
+      }
+      
+      const roleBadges = profileCard.querySelector('.d-flex.align-items-center.gap-2.mb-2');
+      if (roleBadges) {
+        roleBadges.classList.add('role-badges-mobile');
+      }
+      
+      const roleBadgesSpans = roleBadges.querySelectorAll('.badge');
+      roleBadgesSpans.forEach(badge => {
+        badge.classList.add('role-badge-mobile');
+      });
+      
+      const infoItems = profileCard.querySelectorAll('.d-flex.align-items-center.mb-2');
+      infoItems.forEach(item => {
+        item.classList.add('info-item-mobile');
+        const icon = item.querySelector('.fs-5');
+        if (icon) {
+          icon.classList.add('info-icon-mobile');
+        }
+      });
+      
+      const permissionsSection = profileCard.querySelector('.mt-2');
+      if (permissionsSection) {
+        permissionsSection.classList.add('permissions-mobile');
+      }
+      
+      const permissionBadges = permissionsSection.querySelectorAll('.badge.bg-light');
+      permissionBadges.forEach(badge => {
+        badge.classList.add('permission-badge-mobile');
+      });
+      
+      const actionButtons = profileCard.querySelector('.mt-3');
+      if (actionButtons) {
+        actionButtons.classList.add('action-buttons-mobile');
+      }
+      
+      const actionBtns = actionButtons.querySelectorAll('.btn');
+      actionBtns.forEach(btn => {
+        btn.classList.add('action-btn-mobile');
+      });
+      
+      // Create collapsible section
+      const detailsSection = document.createElement('div');
+      detailsSection.className = 'collapsible-section collapsed';
+      detailsSection.id = 'profileDetailsMobile';
+      
+      // Move contact info and permissions into collapsible section
+      const contactInfo = profileCard.querySelectorAll('.col-md-6');
+      const permissions = profileCard.querySelector('.permissions-mobile');
+      
+      contactInfo.forEach(item => {
+        detailsSection.appendChild(item.cloneNode(true));
+        item.remove();
+      });
+      
+      if (permissions) {
+        detailsSection.appendChild(permissions.cloneNode(true));
+        permissions.remove();
+      }
+      
+      // Insert collapsible section after role badges
+      if (roleBadges) {
+        roleBadges.parentNode.insertBefore(detailsSection, roleBadges.nextSibling);
+      }
+      
+      // Create and add toggle button
+      const toggleButton = document.createElement('button');
+      toggleButton.className = 'btn btn-outline-primary btn-sm toggle-btn';
+      toggleButton.id = 'toggleDetailsMobile';
+      toggleButton.innerHTML = `
+        <i class="bi bi-chevron-down me-1 toggle-icon"></i>
+        <span class="toggle-text">Show Details</span>
+      `;
+      
+      detailsSection.parentNode.insertBefore(toggleButton, detailsSection.nextSibling);
+      
+      // Toggle functionality
+      toggleButton.addEventListener('click', function() {
+        const isExpanded = detailsSection.classList.toggle('expanded');
+        detailsSection.classList.toggle('collapsed');
+        
+        const toggleIcon = this.querySelector('.toggle-icon');
+        const toggleText = this.querySelector('.toggle-text');
+        
+        if (isExpanded) {
+          toggleText.textContent = 'Hide Details';
+          toggleIcon.classList.remove('bi-chevron-down');
+          toggleIcon.classList.add('bi-chevron-up');
+        } else {
+          toggleText.textContent = 'Show Details';
+          toggleIcon.classList.remove('bi-chevron-up');
+          toggleIcon.classList.add('bi-chevron-down');
+        }
+      });
+    }
+  }
+});
+
+// Handle window resize
+window.addEventListener('resize', function() {
+  // If resizing to desktop, remove any mobile transformations
+  if (window.innerWidth > 768) {
+    const profileCard = document.querySelector('.profile-card-mobile');
+    if (profileCard) {
+      location.reload(); // Simple solution to reset to original state
+    }
+  }
+});
+</script>
 
 <!-- Bootstrap Icons -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">

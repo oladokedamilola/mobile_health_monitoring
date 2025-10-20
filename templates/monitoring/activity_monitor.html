@@ -1,29 +1,444 @@
 {% extends 'base_monitor.html' %}
+{% load static %}
 {% block title %}Activity Monitor{% endblock %}
 
 {% block content %}
-<div class="container py-4 text-center">
-  <h3 class="fw-bold mb-3 text-dark">🚶 Activity Monitor</h3>
-  <p class="text-muted">Detecting your current physical activity...</p>
+<style>
+    .monitor-container {
+        min-height: 70vh;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    .gif-container {
+        max-width: 300px;
+        margin: 0 auto;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(33, 37, 41, 0.1);
+    }
+    
+    .activity-gif {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        transition: opacity 0.5s ease;
+    }
+    
+    .activity-display {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #495057, #6c757d);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 4px 8px rgba(33, 37, 41, 0.2);
+        transition: all 0.3s ease;
+        min-height: 80px;
+    }
+    
+    .intensity-badge {
+        padding: 0.5rem 1.5rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .intensity-low {
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        color: #155724;
+        border: 2px solid #c3e6cb;
+    }
+    
+    .intensity-medium {
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+        color: #856404;
+        border: 2px solid #ffeaa7;
+    }
+    
+    .intensity-high {
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+        color: #721c24;
+        border: 2px solid #f5c6cb;
+    }
+    
+    .status-indicator {
+        padding: 0.5rem 1.5rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .status-waiting {
+        background-color: #e2e3e5;
+        color: #383d41;
+        border: 2px solid #d6d8db;
+    }
+    
+    .status-tracking {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 2px solid #bee5eb;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-complete {
+        background-color: #d4edda;
+        color: #155724;
+        border: 2px solid #c3e6cb;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .btn-activity {
+        background: linear-gradient(135deg, #495057, #343a40);
+        border: none;
+        border-radius: 2rem;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(33, 37, 41, 0.3);
+    }
+    
+    .btn-activity:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(33, 37, 41, 0.4);
+    }
+    
+    .btn-activity:disabled {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+    
+    .metric-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #495057;
+    }
+    
+    .metric-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .activity-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .activity-display {
+            font-size: 2.5rem;
+            min-height: 70px;
+        }
+        
+        .gif-container {
+            max-width: 250px;
+        }
+        
+        .activity-gif {
+            height: 180px;
+        }
+        
+        .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
 
-  <div class="fw-bold fs-1" id="activity">--</div>
-  <div class="text-muted">Intensity: <span id="intensity">--</span></div>
+<div class="container py-4 monitor-container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 text-center">
+            
+            <!-- Header Section -->
+            <div class="mb-4">
+                <h1 class="fw-bold text-dark mb-2">🚶 Activity Monitor</h1>
+                <p class="text-muted lead">Real-time physical activity tracking with visual feedback</p>
+            </div>
 
-  <button id="startBtn" class="btn btn-dark mt-3 px-4">Start Tracking</button>
+            <!-- GIF Display Area -->
+            <div class="gif-container mb-4">
+                <img id="activityGif" class="activity-gif" 
+                     src="https://media.giphy.com/media/l4FGnTWu2hs4WY5gQ/giphy.gif" 
+                     alt="Activity Monitor Status">
+            </div>
+
+            <!-- Status Indicator -->
+            <div id="statusIndicator" class="status-indicator status-waiting d-inline-block mb-4">
+                <i class="bi bi-hourglass-split me-2"></i>
+                <span id="statusText">Ready to Start Tracking</span>
+            </div>
+
+            <!-- Activity Display -->
+            <div class="mb-4">
+                <div id="activity" class="activity-display">--</div>
+                <div class="mt-3">
+                    <span class="text-muted me-2">Intensity:</span>
+                    <span id="intensity" class="intensity-badge intensity-low">--</span>
+                </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="activity-icon">⏱️</div>
+                    <div class="metric-value" id="duration">0m</div>
+                    <div class="metric-label">Duration</div>
+                </div>
+                <div class="metric-card">
+                    <div class="activity-icon">🔥</div>
+                    <div class="metric-value" id="calories">0</div>
+                    <div class="metric-label">Calories</div>
+                </div>
+                <div class="metric-card">
+                    <div class="activity-icon">📊</div>
+                    <div class="metric-value" id="confidence">--</div>
+                    <div class="metric-label">Confidence</div>
+                </div>
+                <div class="metric-card">
+                    <div class="activity-icon">🔄</div>
+                    <div class="metric-value" id="updates">0</div>
+                    <div class="metric-label">Updates</div>
+                </div>
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="mt-4">
+                <button id="startBtn" class="btn btn-activity me-2">
+                    <i class="bi bi-play-fill me-2"></i>
+                    Start Tracking
+                </button>
+                <button id="stopBtn" class="btn btn-outline-secondary" disabled>
+                    <i class="bi bi-stop-fill me-2"></i>
+                    Stop
+                </button>
+            </div>
+
+            <!-- Activity Guide -->
+            <div class="mt-5 pt-4 border-top">
+                <h6 class="fw-semibold mb-3">🎯 Activity Recognition Guide</h6>
+                <div class="row text-start">
+                    <div class="col-md-6 mb-2">
+                        <i class="bi bi-person text-success me-2"></i>
+                        <strong>Stationary:</strong> Sitting, Standing
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <i class="bi bi-person-walk text-warning me-2"></i>
+                        <strong>Walking:</strong> Light movement
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <i class="bi bi-person-run text-danger me-2"></i>
+                        <strong>Running:</strong> Fast movement
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <i class="bi bi-arrow-repeat text-info me-2"></i>
+                        <strong>Cycling:</strong> Repetitive motion
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-document.getElementById("startBtn").addEventListener("click", () => {
-  const activityEl = document.getElementById("activity");
-  const intensityEl = document.getElementById("intensity");
-  setInterval(() => {
-    fetch("{% url 'monitoring:activity_data_api' %}")
-      .then(res => res.json())
-      .then(data => {
-        activityEl.textContent = data.activity_type;
-        intensityEl.textContent = data.intensity;
-      });
-  }, 2500);
+// GIF URLs for different activity states
+const activityGifs = {
+    waiting: "https://media.giphy.com/media/l4FGnTWu2hs4WY5gQ/giphy.gif", // Calm/ready
+    stationary: "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif", // Still person
+    walking: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Walking animation
+    running: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Running animation
+    cycling: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Cycling animation
+    complete: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif" // Success/completion
+};
+
+// Activity icons mapping
+const activityIcons = {
+    'Stationary': '🧘',
+    'Walking': '🚶',
+    'Running': '🏃',
+    'Cycling': '🚴',
+    'Unknown': '❓'
+};
+
+// State management
+let trackingInterval = null;
+let isTracking = false;
+let trackingStartTime = null;
+let updateCount = 0;
+
+// DOM Elements
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const activityDisplay = document.getElementById("activity");
+const intensityDisplay = document.getElementById("intensity");
+const activityGif = document.getElementById("activityGif");
+const statusIndicator = document.getElementById("statusIndicator");
+const statusText = document.getElementById("statusText");
+const durationDisplay = document.getElementById("duration");
+const caloriesDisplay = document.getElementById("calories");
+const confidenceDisplay = document.getElementById("confidence");
+const updatesDisplay = document.getElementById("updates");
+
+// Update UI state
+function updateUIState(state, message) {
+    // Update GIF with fade transition
+    activityGif.style.opacity = 0;
+    setTimeout(() => {
+        activityGif.src = activityGifs[state] || activityGifs.waiting;
+        activityGif.style.opacity = 1;
+    }, 200);
+    
+    // Update status
+    statusText.textContent = message;
+    statusIndicator.className = `status-indicator status-${state} d-inline-block mb-4`;
+    
+    // Update button states
+    if (state === 'waiting') {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    } else if (state === 'tracking') {
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+    } else if (state === 'complete') {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    }
+}
+
+// Update intensity display
+function updateIntensity(intensity) {
+    intensityDisplay.textContent = intensity;
+    intensityDisplay.className = `intensity-badge intensity-${intensity.toLowerCase()} d-inline-block`;
+}
+
+// Calculate and update metrics
+function updateMetrics(activityType, intensity) {
+    updateCount++;
+    updatesDisplay.textContent = updateCount;
+    
+    // Update duration
+    if (trackingStartTime) {
+        const duration = Math.floor((Date.now() - trackingStartTime) / 1000 / 60);
+        durationDisplay.textContent = `${duration}m`;
+    }
+    
+    // Update calories (simplified calculation)
+    let calories = 0;
+    switch(activityType) {
+        case 'Walking':
+            calories = Math.floor(updateCount * 0.5);
+            break;
+        case 'Running':
+            calories = Math.floor(updateCount * 1.2);
+            break;
+        case 'Cycling':
+            calories = Math.floor(updateCount * 0.8);
+            break;
+        default:
+            calories = Math.floor(updateCount * 0.1);
+    }
+    caloriesDisplay.textContent = calories;
+    
+    // Update confidence based on activity consistency
+    const confidence = Math.min(95, 70 + Math.floor(updateCount / 2));
+    confidenceDisplay.textContent = `${confidence}%`;
+}
+
+// Start tracking
+startBtn.addEventListener("click", () => {
+    isTracking = true;
+    trackingStartTime = Date.now();
+    updateCount = 0;
+    updateUIState('tracking', 'Tracking activity in progress...');
+    
+    trackingInterval = setInterval(() => {
+        fetch("{% url 'monitoring:activity_data_api' %}")
+            .then(res => res.json())
+            .then(data => {
+                // Update activity display with icon
+                const activityIcon = activityIcons[data.activity_type] || '❓';
+                activityDisplay.textContent = `${activityIcon} ${data.activity_type}`;
+                activityDisplay.style.transform = 'scale(1.1)';
+                
+                // Update intensity
+                updateIntensity(data.intensity);
+                
+                // Update metrics
+                updateMetrics(data.activity_type, data.intensity);
+                
+                // Update GIF based on activity type
+                const gifState = data.activity_type.toLowerCase();
+                if (activityGifs[gifState]) {
+                    activityGif.style.opacity = 0;
+                    setTimeout(() => {
+                        activityGif.src = activityGifs[gifState];
+                        activityGif.style.opacity = 1;
+                    }, 200);
+                }
+                
+                setTimeout(() => {
+                    activityDisplay.style.transform = 'scale(1)';
+                }, 200);
+            })
+            .catch(error => {
+                console.error('Error fetching activity data:', error);
+                updateUIState('waiting', 'Tracking error - please try again');
+                clearInterval(trackingInterval);
+            });
+    }, 2500);
+});
+
+// Stop tracking
+stopBtn.addEventListener("click", () => {
+    isTracking = false;
+    clearInterval(trackingInterval);
+    updateUIState('complete', 'Activity tracking completed');
+    
+    // Reset after 3 seconds
+    setTimeout(() => {
+        activityDisplay.textContent = '--';
+        updateIntensity('--');
+        updateUIState('waiting', 'Ready to Start Tracking');
+        
+        // Reset metrics
+        durationDisplay.textContent = '0m';
+        caloriesDisplay.textContent = '0';
+        confidenceDisplay.textContent = '--';
+        updatesDisplay.textContent = '0';
+    }, 3000);
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    updateUIState('waiting', 'Ready to Start Tracking');
+    updateIntensity('--');
 });
 </script>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 {% endblock %}

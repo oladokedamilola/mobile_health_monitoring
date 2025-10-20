@@ -11,18 +11,82 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-
     <!-- Favicon & Icons -->
     <link rel="icon" href="{% static 'img/logo-icon.svg' %}" type="image/svg+xml">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/icon-180.png' %}">
     <link rel="manifest" href="{% static 'manifest.json' %}">
+
+    <!-- Critical CSS to prevent FOUC (Flash of Unstyled Content) -->
+    <style>
+        /* Critical styles to prevent sidebar flash */
+        .layout-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Desktop Sidebar - Visible by default */
+        .sidebar {
+            width: 27%;
+            max-width: 320px;
+            min-height: 100vh;
+            background: #212529;
+            color: white;
+            position: relative;
+            z-index: 1040;
+            display: flex;
+            flex-direction: column;
+            /* Prevent transitions on initial load */
+            transition: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            width: 73%;
+            max-width: calc(100% - 320px);
+            /* Prevent transitions on initial load */
+            transition: none;
+        }
+
+        /* Mobile/Tablet - Hidden by default */
+        @media (max-width: 991px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -280px;
+                width: 280px;
+                height: 100vh;
+                transform: translateX(-100%);
+                z-index: 1040;
+                overflow: hidden;
+                /* Enable transitions only after initial load */
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .main-content {
+                width: 100%;
+                max-width: 100%;
+                padding: 1rem;
+                margin-left: 0;
+            }
+        }
+
+        /* Hide overlay by default */
+        .sidebar-overlay {
+            display: none;
+        }
+
+        /* Prevent body scroll when sidebar is open */
+        body.sidebar-open {
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body class="bg-light">
 
 <!-- Mobile Menu Toggle -->
-<button id="menu-toggle" class="btn btn-outline-primary d-lg-none m-3 position-fixed" style="z-index: 1035;">
+<button id="menu-toggle" class="btn btn-outline-primary d-lg-none m-3 position-fixed" style="z-index: 1035; top: 1rem; left: 1rem;">
     <i class="bi bi-list"></i> Menu
 </button>
 
@@ -184,46 +248,53 @@
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Sidebar Toggle for Mobile
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("sidebar-overlay");
-    const toggleBtn = document.getElementById("menu-toggle");
-    const closeBtn = document.getElementById("sidebar-close");
+    // Initialize sidebar state immediately
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("sidebar-overlay");
+        const toggleBtn = document.getElementById("menu-toggle");
+        const closeBtn = document.getElementById("sidebar-close");
 
-    function openSidebar() {
-        sidebar.classList.add("active");
-        overlay.classList.add("active");
-        document.body.style.overflow = 'hidden';
-    }
+        // Enable transitions after initial load
+        setTimeout(() => {
+            if (sidebar) {
+                sidebar.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            }
+        }, 100);
 
-    function closeSidebar() {
-        sidebar.classList.remove("active");
-        overlay.classList.remove("active");
-        document.body.style.overflow = '';
-    }
+        function openSidebar() {
+            sidebar.classList.add("active");
+            overlay.classList.add("active");
+            document.body.classList.add('sidebar-open');
+        }
 
-    toggleBtn?.addEventListener("click", openSidebar);
-    closeBtn?.addEventListener("click", closeSidebar);
-    overlay?.addEventListener("click", closeSidebar);
+        function closeSidebar() {
+            sidebar.classList.remove("active");
+            overlay.classList.remove("active");
+            document.body.classList.remove('sidebar-open');
+        }
 
-    // Close sidebar when clicking on a nav link on mobile
-    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-        link.addEventListener('click', () => {
-            if (window.innerWidth < 992) {
+        toggleBtn?.addEventListener("click", openSidebar);
+        closeBtn?.addEventListener("click", closeSidebar);
+        overlay?.addEventListener("click", closeSidebar);
+
+        // Close sidebar when clicking on a nav link on mobile
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 992) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 992) {
                 closeSidebar();
             }
         });
-    });
 
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        if (window.innerWidth >= 992) {
-            closeSidebar();
-        }
-    });
-
-    // Set active link based on current URL
-    document.addEventListener('DOMContentLoaded', function() {
+        // Set active link based on current URL
         const currentPath = window.location.pathname;
         const navLinks = document.querySelectorAll('.sidebar .nav-link:not(.logout-link)');
         
@@ -240,23 +311,6 @@
     body {
         font-family: 'Inter', sans-serif;
         overflow-x: hidden;
-    }
-
-    .layout-wrapper {
-        display: flex;
-        min-height: 100vh;
-    }
-
-    /* Desktop Sidebar (27% width) */
-    .sidebar {
-        width: 27%;
-        max-width: 320px;
-        min-height: 100vh;
-        transition: all 0.3s ease-in-out;
-        position: relative;
-        z-index: 1040;
-        display: flex;
-        flex-direction: column;
     }
 
     /* Scrollable content area for mobile/tablet */
@@ -359,18 +413,8 @@
         transform: scale(1.1);
     }
 
-    /* Main Content Area */
-    .main-content {
-        flex: 1;
-        padding: 2rem;
-        transition: all 0.3s ease-in-out;
-        width: 73%;
-        max-width: calc(100% - 320px);
-    }
-
     /* Mobile Overlay */
     .sidebar-overlay {
-        display: none;
         position: fixed;
         top: 0;
         left: 0;
@@ -380,6 +424,7 @@
         z-index: 1035;
         opacity: 0;
         transition: opacity 0.3s ease;
+        display: none;
     }
 
     .sidebar-overlay.active {
@@ -398,25 +443,9 @@
     }
 
     @media (max-width: 991px) {
-        .layout-wrapper {
-            flex-direction: column;
-        }
-
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: -280px;
             width: 280px;
-            height: 100vh;
-            transform: translateX(-100%);
-            z-index: 1040;
-            /* Enable scrolling on mobile/tablet */
-            overflow: hidden;
-        }
-
-        .sidebar.active {
-            transform: translateX(0);
-            left: 0;
+            /* Already positioned correctly by critical CSS */
         }
 
         /* Make sidebar content scrollable on mobile/tablet */
@@ -457,16 +486,6 @@
             top: 1rem;
             left: 1rem;
         }
-    }
-
-    /* Smooth transitions for sidebar */
-    .sidebar {
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-    }
-
-    /* Prevent body scroll when sidebar is open on mobile */
-    body.sidebar-open {
-        overflow: hidden;
     }
 </style>
 
