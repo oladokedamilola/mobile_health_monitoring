@@ -1,7 +1,0 @@
-py manage.py makemigrations accounts 
-analytics monitoring sync notifications
-
-python manage.py migrate
-
-
-I want to improve the UI UX of this page so there'll be relevant gifs displaying, when the page first loads one relevant gif displays, and when the user is using the system eg for 

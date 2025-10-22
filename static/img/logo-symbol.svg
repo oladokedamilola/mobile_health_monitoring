@@ -1,0 +1,37 @@
+<!-- logo-symbol.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240" aria-labelledby="titleAuralis" role="img">
+  <title id="titleAuralis">Auralis Health Logo</title>
+  <!-- Background (transparent) -->
+  <!-- Leaf shape -->
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#95D5B2"/>
+      <stop offset="100%" stop-color="#2D6A4F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- outer leaf -->
+  <path d="M120 18
+           C170 18, 210 58, 210 108
+           C210 158, 170 198, 120 222
+           C70 198, 30 158, 30 108
+           C30 58, 70 18, 120 18 Z"
+        fill="url(#g1)" opacity="1"/>
+
+  <!-- inner vein / soundwave -->
+  <g transform="translate(55,60)">
+    <!-- subtle inner shape to suggest vein -->
+    <path d="M10 60 C30 40, 60 30, 90 30 C120 30, 150 50, 170 70"
+          fill="none" stroke="#F6F8FA" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+    <!-- stylized waveform -->
+    <path d="M0 70
+             L20 40
+             L35 80
+             L55 50
+             L85 90
+             L105 30
+             L125 80
+             L150 60"
+          fill="none" stroke="#1B4332" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" transform="translate(10,0)"/>
+  </g>
+</svg>

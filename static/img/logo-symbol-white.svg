@@ -1,0 +1,19 @@
+<!-- logo-symbol-white.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240" role="img" aria-labelledby="titleAuralisWhite">
+  <title id="titleAuralisWhite">Auralis Health White Logo</title>
+  <path d="M120 18
+           C170 18, 210 58, 210 108
+           C210 158, 170 198, 120 222
+           C70 198, 30 158, 30 108
+           C30 58, 70 18, 120 18 Z"
+        fill="#FFFFFF" opacity="1"/>
+  <path d="M10 70
+             L30 40
+             L45 80
+             L65 50
+             L95 90
+             L115 30
+             L135 80
+             L160 60"
+        fill="none" stroke="#2D6A4F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" transform="translate(10,0)"/>
+</svg>

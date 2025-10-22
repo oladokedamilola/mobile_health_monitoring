@@ -1,0 +1,352 @@
+/* ================================
+   🌿 AURALIS HEALTH STYLE GUIDE
+   ================================ */
+
+/* ---------- COLOR SYSTEM ---------- */
+:root {
+  --color-primary: #2D6A4F;      /* Deep Natural Green */
+  --color-secondary: #95D5B2;    /* Mint Light Green */
+  --color-accent: #F6F8FA;       /* Soft Off-White */
+  --color-dark: #1B4332;
+  --color-light: #E9F5EE;
+  --color-text: #222;
+  --color-muted: #6C757D;
+  --transition: all 0.3s ease-in-out;
+}
+
+/* ---------- GLOBAL RESET ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: 'DM Sans', 'Work Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- TYPOGRAPHY ---------- */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+p {
+  font-weight: 400;
+  color: var(--color-text);
+}
+
+a {
+  text-decoration: none;
+  color: var(--color-primary);
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--color-secondary);
+}
+
+/* ---------- NAVBAR ---------- */
+.navbar {
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 4px 12px rgba(11, 24, 15, 0.06);
+}
+
+.navbar-brand {
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.navbar-brand:hover {
+  color: var(--color-secondary);
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.95) !important;
+  margin-left: 1rem;
+  transition: var(--transition);
+}
+
+.nav-link:hover {
+  color: var(--color-accent) !important;
+}
+
+/* ---------- HERO SECTION ---------- */
+.hero {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-secondary) 100%
+  );
+  color: white;
+  text-align: center;
+  padding: 4rem 1.25rem;
+  border-radius: 0 0 2rem 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: 0.2px;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  opacity: 0.95;
+  margin-top: 0.6rem;
+}
+
+/* ---------- LAYOUT CONTAINERS ---------- */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1rem;
+}
+
+.col-4 {
+  grid-column: span 4;
+}
+
+.col-8 {
+  grid-column: span 8;
+}
+
+/* ---------- CARDS ---------- */
+.card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 6px 18px rgba(10, 36, 20, 0.04);
+  transition: var(--transition);
+  background-color: white;
+  padding: 1rem;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.chart-card {
+  padding: 1rem;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(10, 36, 20, 0.04);
+}
+
+/* ---------- BUTTONS ---------- */
+.btn-primary {
+  background-color: var(--color-primary);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.6rem 1.25rem;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-dark);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: var(--color-dark);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.25rem;
+  transition: var(--transition);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* ---------- DASHBOARD METRICS ---------- */
+.metric-box {
+  background: var(--color-accent);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  text-align: center;
+  transition: var(--transition);
+  margin-bottom: 1rem;
+}
+
+.metric-box:hover {
+  background: var(--color-secondary);
+  color: var(--color-dark);
+  transform: scale(1.02);
+}
+
+.metric-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-muted);
+}
+
+.metric-value {
+  font-size: 1.8rem;
+  color: var(--color-primary);
+  margin-top: 0.25rem;
+  font-weight: 700;
+}
+
+/* ---------- NOTIFICATIONS ---------- */
+#notifications-container {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.toast-notif {
+  background: linear-gradient(90deg, var(--color-secondary), var(--color-primary));
+  color: white;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  min-width: 240px;
+  box-shadow: 0 6px 18px rgba(17, 40, 25, 0.12);
+  opacity: 0;
+  transform: translateY(12px);
+  animation: toastIn 0.35s forwards;
+}
+
+@keyframes toastIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- FOOTER ---------- */
+footer {
+  background-color: var(--color-primary);
+  color: white;
+  text-align: center;
+  padding: 1.5rem 0;
+  border-radius: 1.5rem 1.5rem 0 0;
+  font-size: 0.9rem;
+}
+
+.footer-link {
+  color: #d8f3dc;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: #95d5b2;
+  text-decoration: underline;
+}
+
+.social-link {
+  font-size: 1.25rem;
+  color: #d8f3dc;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.social-link:hover {
+  color: #95d5b2;
+  transform: translateY(-2px);
+}
+
+/* ---------- PWA INSTALL PROMPT ---------- */
+.install-banner {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  box-shadow: 0 6px 18px rgba(8, 24, 15, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 1500;
+}
+
+.install-banner button {
+  background: white;
+  color: var(--color-primary);
+  border: none;
+  border-radius: 25px;
+  padding: 0.4rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.install-banner button:hover {
+  background: var(--color-secondary);
+  color: var(--color-dark);
+}
+
+/* ---------- MICRO-ANIMATIONS ---------- */
+.fade-in {
+  animation: fadeIn 0.6s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .metric-box {
+    margin-bottom: 1rem;
+  }
+
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .col-8 {
+    grid-column: span 6;
+  }
+
+  .col-4 {
+    grid-column: span 6;
+  }
+}
+
+
+

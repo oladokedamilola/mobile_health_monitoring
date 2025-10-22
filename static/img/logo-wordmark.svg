@@ -1,0 +1,29 @@
+<!-- logo-wordmark.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="120" viewBox="0 0 520 120" role="img" aria-labelledby="titleAuralisWM">
+  <title id="titleAuralisWM">Auralis Health Wordmark</title>
+  <!-- symbol on left (small) -->
+  <defs>
+    <linearGradient id="gw" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#95D5B2"/>
+      <stop offset="100%" stop-color="#2D6A4F"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(8,8) scale(0.5)">
+    <path d="M120 18
+           C170 18, 210 58, 210 108
+           C210 158, 170 198, 120 222
+           C70 198, 30 158, 30 108
+           C30 58, 70 18, 120 18 Z"
+          fill="url(#gw)"/>
+    <path d="M50 80 L70 50 L90 90 L110 60 L140 100" fill="none" stroke="#1B4332" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Text: Auralis Health -->
+  <g transform="translate(160,70)">
+    <!-- "Auralis" -->
+    <text x="0" y="-8" font-family="DM Sans, Work Sans, Arial, sans-serif" font-weight="700" font-size="34" fill="#1B4332">Auralis</text>
+    <!-- "Health" -->
+    <text x="0" y="28" font-family="Work Sans, Arial, sans-serif" font-weight="500" font-size="18" fill="#2D6A4F">Health</text>
+  </g>
+</svg>

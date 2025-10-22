@@ -1,0 +1,12 @@
+{
+  "name": "Auralis Health",
+  "short_name": "Auralis",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F6F8FA",
+  "theme_color": "#2D6A4F",
+  "icons": [
+    { "src": "/static/img/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/static/img/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
