@@ -238,7 +238,7 @@
               <th>Date</th>
               <th>Heart Rate (bpm)</th>
               <th>Respiratory Rate</th>
-              <th>SpO₂ (%)</th>
+              
             </tr>
           </thead>
           <tbody>
@@ -247,7 +247,7 @@
               <td>{{ record.timestamp|naturaltime }}</td>
               <td>{{ record.heart_rate|floatformat:1 }}</td>
               <td>{{ record.respiratory_rate|floatformat:1 }}</td>
-              <td>{{ record.spo2|default:"—" }}</td>
+              
             </tr>
             {% endfor %}
           </tbody>

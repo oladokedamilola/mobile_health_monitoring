@@ -15,13 +15,23 @@
         border-radius: 1rem;
         overflow: hidden;
         box-shadow: 0 10px 30px rgba(33, 37, 41, 0.1);
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+    
+    .gif-container:hover {
+        transform: translateY(-5px);
     }
     
     .activity-gif {
         width: 100%;
         height: 200px;
         object-fit: cover;
-        transition: opacity 0.5s ease;
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    
+    .activity-gif.active {
+        animation: gentlePulse 2s ease-in-out infinite;
     }
     
     .activity-display {
@@ -35,6 +45,10 @@
         text-shadow: 0 4px 8px rgba(33, 37, 41, 0.2);
         transition: all 0.3s ease;
         min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
     }
     
     .intensity-badge {
@@ -68,6 +82,10 @@
         border-radius: 2rem;
         font-weight: 600;
         transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
     
     .status-waiting {
@@ -95,6 +113,12 @@
         100% { transform: scale(1); }
     }
     
+    @keyframes gentlePulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+    
     .btn-activity {
         background: linear-gradient(135deg, #495057, #343a40);
         border: none;
@@ -104,6 +128,10 @@
         color: white;
         transition: all 0.3s ease;
         box-shadow: 0 4px 15px rgba(33, 37, 41, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
     
     .btn-activity:hover {
@@ -115,6 +143,26 @@
         background: linear-gradient(135deg, #6c757d, #5a6268);
         transform: none;
         box-shadow: none;
+    }
+    
+    .btn-stop-activity {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        border: none;
+        border-radius: 2rem;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .btn-stop-activity:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
     }
     
     .metrics-grid {
@@ -130,6 +178,11 @@
         border-radius: 1rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-3px);
     }
     
     .metric-value {
@@ -150,6 +203,49 @@
         margin-bottom: 0.5rem;
     }
     
+    .progress-container {
+        max-width: 400px;
+        margin: 0 auto 20px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        overflow: hidden;
+        height: 8px;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #495057, #6c757d);
+        width: 0%;
+        transition: width 0.5s ease;
+        border-radius: 10px;
+    }
+    
+    .instructions-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        border: 1px solid rgba(33, 37, 41, 0.1);
+    }
+    
+    .instruction-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease;
+    }
+    
+    .instruction-item:hover {
+        background-color: rgba(33, 37, 41, 0.05);
+    }
+    
+    .instruction-item i {
+        font-size: 1.2rem;
+        width: 24px;
+    }
+    
     @media (max-width: 768px) {
         .activity-display {
             font-size: 2.5rem;
@@ -167,6 +263,11 @@
         .metrics-grid {
             grid-template-columns: repeat(2, 1fr);
         }
+        
+        .btn-activity, .btn-stop-activity {
+            width: 100%;
+            margin-bottom: 10px;
+        }
     }
 </style>
 
@@ -180,16 +281,21 @@
                 <p class="text-muted lead">Real-time physical activity tracking with visual feedback</p>
             </div>
 
+            <!-- Progress Bar -->
+            <div class="progress-container mb-3">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+
             <!-- GIF Display Area -->
             <div class="gif-container mb-4">
                 <img id="activityGif" class="activity-gif" 
-                     src="https://media.giphy.com/media/l4FGnTWu2hs4WY5gQ/giphy.gif" 
+                     src="" 
                      alt="Activity Monitor Status">
             </div>
 
             <!-- Status Indicator -->
             <div id="statusIndicator" class="status-indicator status-waiting d-inline-block mb-4">
-                <i class="bi bi-hourglass-split me-2"></i>
+                <i class="bi bi-hourglass-split"></i>
                 <span id="statusText">Ready to Start Tracking</span>
             </div>
 
@@ -227,36 +333,50 @@
             </div>
 
             <!-- Control Buttons -->
-            <div class="mt-4">
-                <button id="startBtn" class="btn btn-activity me-2">
-                    <i class="bi bi-play-fill me-2"></i>
+            <div class="mt-4 d-flex flex-column flex-md-row justify-content-center gap-2">
+                <button id="startBtn" class="btn btn-activity">
+                    <i class="bi bi-play-fill"></i>
                     Start Tracking
                 </button>
-                <button id="stopBtn" class="btn btn-outline-secondary" disabled>
-                    <i class="bi bi-stop-fill me-2"></i>
+                <button id="stopBtn" class="btn btn-stop-activity" disabled>
+                    <i class="bi bi-stop-fill"></i>
                     Stop
                 </button>
             </div>
 
             <!-- Activity Guide -->
-            <div class="mt-5 pt-4 border-top">
-                <h6 class="fw-semibold mb-3">🎯 Activity Recognition Guide</h6>
-                <div class="row text-start">
-                    <div class="col-md-6 mb-2">
-                        <i class="bi bi-person text-success me-2"></i>
-                        <strong>Stationary:</strong> Sitting, Standing
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <i class="bi bi-person-walk text-warning me-2"></i>
-                        <strong>Walking:</strong> Light movement
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <i class="bi bi-person-run text-danger me-2"></i>
-                        <strong>Running:</strong> Fast movement
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <i class="bi bi-arrow-repeat text-info me-2"></i>
-                        <strong>Cycling:</strong> Repetitive motion
+            <div class="mt-5 pt-4">
+                <div class="instructions-card">
+                    <h6 class="fw-semibold mb-3 text-start">🎯 Activity Recognition Guide</h6>
+                    <div class="text-start">
+                        <div class="instruction-item">
+                            <i class="bi bi-person text-success"></i>
+                            <div>
+                                <strong>Stationary:</strong> Sitting, Standing
+                                <small class="d-block text-muted">Low intensity activity</small>
+                            </div>
+                        </div>
+                        <div class="instruction-item">
+                            <i class="bi bi-person-walk text-warning"></i>
+                            <div>
+                                <strong>Walking:</strong> Light movement
+                                <small class="d-block text-muted">Medium intensity activity</small>
+                            </div>
+                        </div>
+                        <div class="instruction-item">
+                            <i class="bi bi-person-run text-danger"></i>
+                            <div>
+                                <strong>Running:</strong> Fast movement
+                                <small class="d-block text-muted">High intensity activity</small>
+                            </div>
+                        </div>
+                        <div class="instruction-item">
+                            <i class="bi bi-arrow-repeat text-info"></i>
+                            <div>
+                                <strong>Cycling:</strong> Repetitive motion
+                                <small class="d-block text-muted">Medium-high intensity</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -265,15 +385,37 @@
 </div>
 
 <script>
-// GIF URLs for different activity states
-const activityGifs = {
-    waiting: "https://media.giphy.com/media/l4FGnTWu2hs4WY5gQ/giphy.gif", // Calm/ready
-    stationary: "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif", // Still person
-    walking: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Walking animation
-    running: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Running animation
-    cycling: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Cycling animation
-    complete: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif" // Success/completion
-};
+// Function to check if a local GIF exists
+async function checkLocalGifExists(gifPath) {
+    try {
+        const response = await fetch(gifPath, { method: 'HEAD' });
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
+}
+
+// Function to get the appropriate GIF URL
+async function getGifUrl(state) {
+    const localGifPath = `/static/monitoring/gifs/activity_${state}.gif`;
+    const gifExists = await checkLocalGifExists(localGifPath);
+    
+    if (gifExists) {
+        return localGifPath;
+    } else {
+        // Fallback to public GIFs
+        const publicGifs = {
+            waiting: "https://media.giphy.com/media/3og0IMJcSI6z1xWf1u/giphy.gif", // Person waiting
+            stationary: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Person sitting/meditating
+            walking: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif", // Walking person
+            running: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Running person
+            cycling: "https://media.giphy.com/media/3o72FfM5HJydzafgUE/giphy.gif", // Cycling animation
+            complete: "https://media.giphy.com/media/xULW8N9O5W3WrN6f7W/giphy.gif", // Success checkmark
+            error: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif" // Warning symbol
+        };
+        return publicGifs[state] || publicGifs.waiting;
+    }
+}
 
 // Activity icons mapping
 const activityIcons = {
@@ -284,11 +426,22 @@ const activityIcons = {
     'Unknown': '❓'
 };
 
+// Activity intensity mapping
+const activityIntensities = {
+    'Stationary': 'low',
+    'Walking': 'medium',
+    'Running': 'high',
+    'Cycling': 'medium',
+    'Unknown': 'low'
+};
+
 // State management
 let trackingInterval = null;
 let isTracking = false;
 let trackingStartTime = null;
 let updateCount = 0;
+let progressInterval = null;
+let progressValue = 0;
 
 // DOM Elements
 const startBtn = document.getElementById("startBtn");
@@ -302,14 +455,26 @@ const durationDisplay = document.getElementById("duration");
 const caloriesDisplay = document.getElementById("calories");
 const confidenceDisplay = document.getElementById("confidence");
 const updatesDisplay = document.getElementById("updates");
+const progressBar = document.getElementById("progressBar");
 
 // Update UI state
-function updateUIState(state, message) {
+async function updateUIState(state, message) {
+    // Get appropriate GIF URL
+    const gifUrl = await getGifUrl(state);
+    
     // Update GIF with fade transition
     activityGif.style.opacity = 0;
+    
     setTimeout(() => {
-        activityGif.src = activityGifs[state] || activityGifs.waiting;
+        activityGif.src = gifUrl;
         activityGif.style.opacity = 1;
+        
+        // Add/remove active animation based on state
+        if (state === 'tracking' || state === 'walking' || state === 'running' || state === 'cycling') {
+            activityGif.classList.add('active');
+        } else {
+            activityGif.classList.remove('active');
+        }
     }, 200);
     
     // Update status
@@ -320,19 +485,54 @@ function updateUIState(state, message) {
     if (state === 'waiting') {
         startBtn.disabled = false;
         stopBtn.disabled = true;
+        resetProgress();
     } else if (state === 'tracking') {
         startBtn.disabled = true;
         stopBtn.disabled = false;
-    } else if (state === 'complete') {
+        startProgress();
+    } else if (state === 'complete' || state === 'error') {
         startBtn.disabled = false;
         stopBtn.disabled = true;
+        completeProgress();
     }
+}
+
+// Progress bar functions
+function startProgress() {
+    progressValue = 0;
+    clearInterval(progressInterval);
+    
+    progressInterval = setInterval(() => {
+        if (progressValue < 100) {
+            progressValue += 0.3; // Slowly increase progress
+            progressBar.style.width = `${progressValue}%`;
+        } else {
+            clearInterval(progressInterval);
+        }
+    }, 100);
+}
+
+function resetProgress() {
+    clearInterval(progressInterval);
+    progressValue = 0;
+    progressBar.style.width = '0%';
+}
+
+function completeProgress() {
+    clearInterval(progressInterval);
+    progressBar.style.width = '100%';
+    
+    // Reset progress after a delay
+    setTimeout(() => {
+        progressBar.style.width = '0%';
+    }, 2000);
 }
 
 // Update intensity display
 function updateIntensity(intensity) {
     intensityDisplay.textContent = intensity;
-    intensityDisplay.className = `intensity-badge intensity-${intensity.toLowerCase()} d-inline-block`;
+    const intensityClass = intensity.toLowerCase();
+    intensityDisplay.className = `intensity-badge intensity-${intensityClass} d-inline-block`;
 }
 
 // Calculate and update metrics
@@ -368,61 +568,72 @@ function updateMetrics(activityType, intensity) {
     confidenceDisplay.textContent = `${confidence}%`;
 }
 
+// Simulate activity detection (for demo purposes)
+function simulateActivityDetection() {
+    const activities = ['Stationary', 'Walking', 'Running', 'Cycling'];
+    const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+    
+    return {
+        activity_type: randomActivity,
+        intensity: activityIntensities[randomActivity]
+    };
+}
+
 // Start tracking
-startBtn.addEventListener("click", () => {
+startBtn.addEventListener("click", async () => {
     isTracking = true;
     trackingStartTime = Date.now();
     updateCount = 0;
-    updateUIState('tracking', 'Tracking activity in progress...');
+    await updateUIState('tracking', 'Tracking activity in progress...');
     
-    trackingInterval = setInterval(() => {
-        fetch("{% url 'monitoring:activity_data_api' %}")
-            .then(res => res.json())
-            .then(data => {
-                // Update activity display with icon
-                const activityIcon = activityIcons[data.activity_type] || '❓';
-                activityDisplay.textContent = `${activityIcon} ${data.activity_type}`;
-                activityDisplay.style.transform = 'scale(1.1)';
-                
-                // Update intensity
-                updateIntensity(data.intensity);
-                
-                // Update metrics
-                updateMetrics(data.activity_type, data.intensity);
-                
-                // Update GIF based on activity type
-                const gifState = data.activity_type.toLowerCase();
-                if (activityGifs[gifState]) {
-                    activityGif.style.opacity = 0;
-                    setTimeout(() => {
-                        activityGif.src = activityGifs[gifState];
-                        activityGif.style.opacity = 1;
-                    }, 200);
-                }
-                
-                setTimeout(() => {
-                    activityDisplay.style.transform = 'scale(1)';
-                }, 200);
-            })
-            .catch(error => {
-                console.error('Error fetching activity data:', error);
-                updateUIState('waiting', 'Tracking error - please try again');
-                clearInterval(trackingInterval);
-            });
+    trackingInterval = setInterval(async () => {
+        // In a real application, you would fetch from your API
+        // fetch("{% url 'monitoring:activity_data_api' %}")
+        // For demo purposes, we'll simulate data
+        const simulatedData = simulateActivityDetection();
+        
+        // Simulate API response
+        setTimeout(async () => {
+            // Update activity display with icon
+            const activityIcon = activityIcons[simulatedData.activity_type] || '❓';
+            activityDisplay.textContent = `${activityIcon} ${simulatedData.activity_type}`;
+            activityDisplay.style.transform = 'scale(1.1)';
+            
+            // Update intensity
+            updateIntensity(simulatedData.intensity);
+            
+            // Update metrics
+            updateMetrics(simulatedData.activity_type, simulatedData.intensity);
+            
+            // Update GIF based on activity type
+            const gifState = simulatedData.activity_type.toLowerCase();
+            const gifUrl = await getGifUrl(gifState);
+            
+            activityGif.style.opacity = 0;
+            setTimeout(() => {
+                activityGif.src = gifUrl;
+                activityGif.style.opacity = 1;
+            }, 200);
+            
+            setTimeout(() => {
+                activityDisplay.style.transform = 'scale(1)';
+            }, 200);
+        }, 500);
+        
     }, 2500);
 });
 
 // Stop tracking
-stopBtn.addEventListener("click", () => {
+stopBtn.addEventListener("click", async () => {
     isTracking = false;
     clearInterval(trackingInterval);
-    updateUIState('complete', 'Activity tracking completed');
+    await updateUIState('complete', 'Activity tracking completed');
     
     // Reset after 3 seconds
-    setTimeout(() => {
+    setTimeout(async () => {
         activityDisplay.textContent = '--';
         updateIntensity('--');
-        updateUIState('waiting', 'Ready to Start Tracking');
+        await updateUIState('waiting', 'Ready to Start Tracking');
         
         // Reset metrics
         durationDisplay.textContent = '0m';
@@ -433,8 +644,8 @@ stopBtn.addEventListener("click", () => {
 });
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    updateUIState('waiting', 'Ready to Start Tracking');
+document.addEventListener('DOMContentLoaded', async () => {
+    await updateUIState('waiting', 'Ready to Start Tracking');
     updateIntensity('--');
 });
 </script>

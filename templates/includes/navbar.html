@@ -22,10 +22,11 @@
         </li>
         
         {% if user.is_authenticated %}
-          <!-- Authenticated User Links (Only show if email is verified) -->
-          {% if user.is_email_verified %}
+          <!-- Check if user is admin/superuser OR has verified email -->
+          {% if user.is_superuser or user.role == 'admin' or user.is_email_verified %}
+            <!-- Full access for admin/superuser or verified users -->
             <li class="nav-item">
-              <a class="nav-link text-white fw-medium px-3" href="#">Dashboard</a>
+              <a class="nav-link text-white fw-medium px-3" href="{% url 'accounts:dashboard' %}">Dashboard</a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-white fw-medium px-3" href="{% url 'analytics:report' %}">Analytics</a>
@@ -34,7 +35,7 @@
               <a class="nav-link text-white fw-medium px-3" href="{% url 'notifications:notification-list' %}">Notifications</a>
             </li>
           {% else %}
-            <!-- Show verification reminder if email not verified -->
+            <!-- Show verification reminder if email not verified and not admin -->
             <li class="nav-item">
               <a class="nav-link text-warning fw-medium px-3" 
                  href="#" 
@@ -50,15 +51,15 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-white fw-semibold px-3" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-person-circle me-1"></i> {{ user.username|title }}
-              {% if not user.is_email_verified %}
+              {% if not user.is_email_verified and not user.is_superuser and user.role != 'admin' %}
                 <span class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle">
                   <span class="visually-hidden">Email not verified</span>
                 </span>
               {% endif %}
             </a>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-              <!-- Profile Link (disabled when email not verified) -->
-              {% if user.is_email_verified %}
+              <!-- Profile Link (always enabled for admin/superuser, otherwise only when email verified) -->
+              {% if user.is_superuser or user.role == 'admin' or user.is_email_verified %}
                 <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Profile</a></li>
                 <li><a class="dropdown-item" href="#">Settings</a></li>
               {% else %}
@@ -76,7 +77,8 @@
                 </li>
               {% endif %}
               
-              {% if not user.is_email_verified %}
+              <!-- Show verification option only for non-admin users with unverified email -->
+              {% if not user.is_email_verified and not user.is_superuser and user.role != 'admin' %}
                 <li><hr class="dropdown-divider"></li>
                 <li>
                   <a class="dropdown-item text-warning" 
@@ -112,7 +114,7 @@
   </div>
 </nav>
 
-<!-- Email Verification Modal (You'll need to implement this) -->
+<!-- Email Verification Modal -->
 <div class="modal fade" id="emailVerificationModal" tabindex="-1" aria-labelledby="emailVerificationModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">

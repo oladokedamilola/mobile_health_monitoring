@@ -1,25 +1,689 @@
 {% extends 'base_monitor.html' %}
+{% load static %}
 {% block title %}Respiratory Rate Monitor{% endblock %}
 
 {% block content %}
-<div class="container py-4 text-center">
-  <h3 class="fw-bold mb-3 text-primary">🌬 Respiratory Rate Monitor</h3>
-  <p class="text-muted">Breathe normally while the system detects your respiratory pattern.</p>
+<style>
+    .monitor-container {
+        min-height: 70vh;
+        background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+    }
+    
+    .gif-container {
+        max-width: 300px;
+        margin: 0 auto;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(13, 110, 253, 0.1);
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+    
+    .gif-container:hover {
+        transform: translateY(-5px);
+    }
+    
+    .breath-gif {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    
+    .breath-gif.breathing {
+        animation: gentleBreath 3s ease-in-out infinite;
+    }
+    
+    .rate-display {
+        font-size: 4rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .rate-display::after {
+        content: 'BPM';
+        position: absolute;
+        top: -15px;
+        right: -40px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #0d6efd;
+        background: rgba(13, 110, 253, 0.1);
+        padding: 2px 8px;
+        border-radius: 10px;
+    }
+    
+    .status-indicator {
+        padding: 0.5rem 1.5rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .status-waiting {
+        background-color: #e2e3e5;
+        color: #383d41;
+        border: 2px solid #d6d8db;
+    }
+    
+    .status-monitoring {
+        background-color: #cff4fc;
+        color: #055160;
+        border: 2px solid #b6effb;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-complete {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        border: 2px solid #badbcc;
+    }
+    
+    .status-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 2px solid #f1aeb5;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes gentleBreath {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); }
+    }
+    
+    .btn-respiratory {
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        border: none;
+        border-radius: 2rem;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .btn-respiratory:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(13, 110, 253, 0.4);
+    }
+    
+    .btn-respiratory:disabled {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .btn-stop-respiratory {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        border: none;
+        border-radius: 2rem;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .btn-stop-respiratory:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
+    }
+    
+    .reading-quality {
+        font-size: 0.9rem;
+        padding: 0.25rem 1rem;
+        border-radius: 1rem;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .progress-container {
+        max-width: 400px;
+        margin: 0 auto 20px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        overflow: hidden;
+        height: 8px;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #0d6efd, #0dcaf0);
+        width: 0%;
+        transition: width 0.5s ease;
+        border-radius: 10px;
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+    
+    .metric-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #495057;
+    }
+    
+    .metric-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .metric-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: #0d6efd;
+    }
+    
+    .instructions-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        border: 1px solid rgba(13, 110, 253, 0.1);
+    }
+    
+    .instruction-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease;
+    }
+    
+    .instruction-item:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    .instruction-item i {
+        font-size: 1.2rem;
+        width: 24px;
+        color: #0d6efd;
+    }
+    
+    .breath-indicator {
+        width: 100px;
+        height: 4px;
+        background: #e9ecef;
+        border-radius: 2px;
+        margin: 1rem auto;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .breath-animation {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background: linear-gradient(90deg, #0d6efd, #0dcaf0);
+        border-radius: 2px;
+        animation: breathFlow 4s ease-in-out infinite;
+    }
+    
+    @keyframes breathFlow {
+        0%, 100% { width: 0%; }
+        50% { width: 100%; }
+    }
+    
+    @media (max-width: 768px) {
+        .rate-display {
+            font-size: 3rem;
+        }
+        
+        .rate-display::after {
+            font-size: 0.8rem;
+            top: -12px;
+            right: -30px;
+        }
+        
+        .gif-container {
+            max-width: 250px;
+        }
+        
+        .breath-gif {
+            height: 180px;
+        }
+        
+        .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .btn-respiratory, .btn-stop-respiratory {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    }
+</style>
 
-  <div class="display-3 fw-bold text-primary" id="rate">--</div>
-  <p class="text-muted">Breaths Per Minute</p>
+<div class="container py-4 monitor-container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 text-center">
+            
+            <!-- Header Section -->
+            <div class="mb-4">
+                <h1 class="fw-bold text-primary mb-2">🌬 Respiratory Rate Monitor</h1>
+                <p class="text-muted lead">Real-time breathing pattern detection with visual feedback</p>
+            </div>
 
-  <button id="startBtn" class="btn btn-primary mt-3 px-4">Start Monitoring</button>
+            <!-- Progress Bar -->
+            <div class="progress-container mb-3">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+
+            <!-- GIF Display Area -->
+            <div class="gif-container mb-4">
+                <img id="breathGif" class="breath-gif" 
+                     src="" 
+                     alt="Respiratory Monitor Status">
+            </div>
+
+            <!-- Breath Animation Indicator -->
+            <div class="breath-indicator">
+                <div id="breathAnimation" class="breath-animation"></div>
+            </div>
+
+            <!-- Status Indicator -->
+            <div id="statusIndicator" class="status-indicator status-waiting d-inline-block mb-4">
+                <i class="bi bi-hourglass-split"></i>
+                <span id="statusText">Ready to Start Monitoring</span>
+            </div>
+
+            <!-- Rate Display -->
+            <div class="mb-3">
+                <div id="rate" class="rate-display">--</div>
+                <p class="text-muted mb-2">Breaths Per Minute</p>
+                <div id="qualityIndicator" class="reading-quality d-inline-block">
+                    <i class="bi bi-circle-fill text-secondary me-1"></i>
+                    <span id="qualityText">Waiting for reading</span>
+                </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">⏱️</div>
+                    <div class="metric-value" id="duration">0m</div>
+                    <div class="metric-label">Duration</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">📊</div>
+                    <div class="metric-value" id="confidence">--</div>
+                    <div class="metric-label">Confidence</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🔄</div>
+                    <div class="metric-value" id="updates">0</div>
+                    <div class="metric-label">Updates</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">💨</div>
+                    <div class="metric-value" id="pattern">--</div>
+                    <div class="metric-label">Pattern</div>
+                </div>
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="mt-4 d-flex flex-column flex-md-row justify-content-center gap-2">
+                <button id="startBtn" class="btn btn-respiratory">
+                    <i class="bi bi-play-fill"></i>
+                    Start Monitoring
+                </button>
+                <button id="stopBtn" class="btn btn-stop-respiratory" disabled>
+                    <i class="bi bi-stop-fill"></i>
+                    Stop
+                </button>
+            </div>
+
+            <!-- Instructions -->
+            <div class="mt-5 pt-4">
+                <div class="instructions-card">
+                    <h6 class="fw-semibold mb-3 text-start">📋 Breathing Instructions</h6>
+                    <div class="text-start">
+                        <div class="instruction-item">
+                            <i class="bi bi-check-circle"></i>
+                            <span>Sit upright in a comfortable position</span>
+                        </div>
+                        <div class="instruction-item">
+                            <i class="bi bi-check-circle"></i>
+                            <span>Breathe normally through your nose</span>
+                        </div>
+                        <div class="instruction-item">
+                            <i class="bi bi-check-circle"></i>
+                            <span>Keep your chest and shoulders relaxed</span>
+                        </div>
+                        <div class="instruction-item">
+                            <i class="bi bi-check-circle"></i>
+                            <span>Avoid holding your breath or deep breaths</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-document.getElementById("startBtn").addEventListener("click", () => {
-  const rateDisplay = document.getElementById("rate");
-  setInterval(() => {
-    fetch("{% url 'monitoring:respiration_data_api' %}")
-      .then(res => res.json())
-      .then(data => rateDisplay.textContent = data.respiratory_rate);
-  }, 3000);
+// Function to check if a local GIF exists
+async function checkLocalGifExists(gifPath) {
+    try {
+        const response = await fetch(gifPath, { method: 'HEAD' });
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
+}
+
+// Function to get the appropriate GIF URL
+async function getGifUrl(state) {
+    const localGifPath = `/static/monitoring/gifs/breath_${state}.gif`;
+    const gifExists = await checkLocalGifExists(localGifPath);
+    
+    if (gifExists) {
+        return localGifPath;
+    } else {
+        // Fallback to public GIFs
+        const publicGifs = {
+            waiting: "https://media.giphy.com/media/3og0IMJcSI6z1xWf1u/giphy.gif", // Calm breathing
+            monitoring: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif", // Gentle breathing
+            normal: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Normal breathing
+            fast: "https://media.giphy.com/media/3o72FfM5HJydzafgUE/giphy.gif", // Fast breathing
+            slow: "https://media.giphy.com/media/xULW8N9O5W3WrN6f7W/giphy.gif", // Slow breathing
+            complete: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Success
+            error: "https://media.giphy.com/media/l4FGo4RqW6re6AZU4/giphy.gif" // Error
+        };
+        return publicGifs[state] || publicGifs.waiting;
+    }
+}
+
+// Breathing pattern descriptions
+const breathingPatterns = {
+    'normal': 'Regular',
+    'fast': 'Rapid',
+    'slow': 'Slow',
+    'deep': 'Deep',
+    'shallow': 'Shallow'
+};
+
+// State management
+let monitoringInterval = null;
+let isMonitoring = false;
+let monitoringStartTime = null;
+let updateCount = 0;
+let progressInterval = null;
+let progressValue = 0;
+
+// DOM Elements
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const rateDisplay = document.getElementById("rate");
+const breathGif = document.getElementById("breathGif");
+const breathAnimation = document.getElementById("breathAnimation");
+const statusIndicator = document.getElementById("statusIndicator");
+const statusText = document.getElementById("statusText");
+const qualityIndicator = document.getElementById("qualityIndicator");
+const qualityText = document.getElementById("qualityText");
+const durationDisplay = document.getElementById("duration");
+const confidenceDisplay = document.getElementById("confidence");
+const updatesDisplay = document.getElementById("updates");
+const patternDisplay = document.getElementById("pattern");
+const progressBar = document.getElementById("progressBar");
+
+// Update UI state
+async function updateUIState(state, message) {
+    // Get appropriate GIF URL
+    const gifUrl = await getGifUrl(state);
+    
+    // Update GIF with fade transition
+    breathGif.style.opacity = 0;
+    
+    setTimeout(() => {
+        breathGif.src = gifUrl;
+        breathGif.style.opacity = 1;
+        
+        // Add/remove breathing animation based on state
+        if (state === 'monitoring' || state === 'normal' || state === 'fast' || state === 'slow') {
+            breathGif.classList.add('breathing');
+        } else {
+            breathGif.classList.remove('breathing');
+        }
+    }, 200);
+    
+    // Update status
+    statusText.textContent = message;
+    statusIndicator.className = `status-indicator status-${state} d-inline-block mb-4`;
+    
+    // Update button states
+    if (state === 'waiting') {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        resetProgress();
+        breathAnimation.style.animationPlayState = 'paused';
+    } else if (state === 'monitoring') {
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        startProgress();
+        breathAnimation.style.animationPlayState = 'running';
+    } else if (state === 'complete' || state === 'error') {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        completeProgress();
+        breathAnimation.style.animationPlayState = 'paused';
+    }
+}
+
+// Progress bar functions
+function startProgress() {
+    progressValue = 0;
+    clearInterval(progressInterval);
+    
+    progressInterval = setInterval(() => {
+        if (progressValue < 100) {
+            progressValue += 0.3; // Slowly increase progress
+            progressBar.style.width = `${progressValue}%`;
+        } else {
+            clearInterval(progressInterval);
+        }
+    }, 100);
+}
+
+function resetProgress() {
+    clearInterval(progressInterval);
+    progressValue = 0;
+    progressBar.style.width = '0%';
+}
+
+function completeProgress() {
+    clearInterval(progressInterval);
+    progressBar.style.width = '100%';
+    
+    // Reset progress after a delay
+    setTimeout(() => {
+        progressBar.style.width = '0%';
+    }, 2000);
+}
+
+// Update reading quality
+function updateReadingQuality(rate) {
+    if (rate === '--') {
+        qualityText.textContent = 'Waiting for reading';
+        qualityIndicator.innerHTML = '<i class="bi bi-circle-fill text-secondary me-1"></i>Waiting for reading';
+        return;
+    }
+    
+    const rateValue = parseInt(rate);
+    if (rateValue < 8 || rateValue > 30) {
+        qualityText.textContent = 'Unreliable reading';
+        qualityIndicator.innerHTML = '<i class="bi bi-circle-fill text-danger me-1"></i>Unreliable reading';
+    } else if (rateValue < 10 || rateValue > 24) {
+        qualityText.textContent = 'Moderate quality';
+        qualityIndicator.innerHTML = '<i class="bi bi-circle-fill text-warning me-1"></i>Moderate quality';
+    } else {
+        qualityText.textContent = 'Good quality';
+        qualityIndicator.innerHTML = '<i class="bi bi-circle-fill text-success me-1"></i>Good quality';
+    }
+}
+
+// Update metrics
+async function updateMetrics(rate, pattern) {
+    updateCount++;
+    updatesDisplay.textContent = updateCount;
+    
+    // Update duration
+    if (monitoringStartTime) {
+        const duration = Math.floor((Date.now() - monitoringStartTime) / 1000 / 60);
+        durationDisplay.textContent = `${duration}m`;
+    }
+    
+    // Update confidence based on reading consistency
+    const confidence = Math.min(95, 75 + Math.floor(updateCount / 3));
+    confidenceDisplay.textContent = `${confidence}%`;
+    
+    // Update pattern display
+    patternDisplay.textContent = breathingPatterns[pattern] || '--';
+    
+    // Update GIF based on breathing pattern
+    if (rate !== '--') {
+        const rateValue = parseInt(rate);
+        let gifState = 'normal';
+        
+        if (rateValue < 10) gifState = 'slow';
+        else if (rateValue > 20) gifState = 'fast';
+        else gifState = 'normal';
+        
+        const gifUrl = await getGifUrl(gifState);
+        breathGif.style.opacity = 0;
+        setTimeout(() => {
+            breathGif.src = gifUrl;
+            breathGif.style.opacity = 1;
+        }, 200);
+    }
+}
+
+// Simulate respiratory rate detection (for demo purposes)
+function simulateRespiratoryDetection() {
+    const baseRate = 16; // Normal respiratory rate
+    const variation = Math.random() * 6 - 3; // ±3 breaths variation
+    const simulatedRate = Math.round(baseRate + variation);
+    
+    let pattern = 'normal';
+    if (simulatedRate < 12) pattern = 'slow';
+    else if (simulatedRate > 20) pattern = 'fast';
+    else if (Math.random() > 0.8) pattern = 'deep';
+    else if (Math.random() > 0.8) pattern = 'shallow';
+    
+    return {
+        respiratory_rate: simulatedRate,
+        pattern: pattern
+    };
+}
+
+// Start monitoring
+startBtn.addEventListener("click", async () => {
+    isMonitoring = true;
+    monitoringStartTime = Date.now();
+    updateCount = 0;
+    await updateUIState('monitoring', 'Monitoring breathing pattern...');
+    
+    monitoringInterval = setInterval(async () => {
+        // In a real application, you would fetch from your API
+        // fetch("{% url 'monitoring:respiration_data_api' %}")
+        // For demo purposes, we'll simulate data
+        const simulatedData = simulateRespiratoryDetection();
+        
+        // Simulate API response
+        setTimeout(async () => {
+            rateDisplay.textContent = simulatedData.respiratory_rate;
+            rateDisplay.style.transform = 'scale(1.1)';
+            
+            // Update reading quality
+            updateReadingQuality(simulatedData.respiratory_rate.toString());
+            
+            // Update metrics
+            await updateMetrics(simulatedData.respiratory_rate.toString(), simulatedData.pattern);
+            
+            setTimeout(() => {
+                rateDisplay.style.transform = 'scale(1)';
+            }, 200);
+        }, 500);
+        
+    }, 3000);
+});
+
+// Stop monitoring
+stopBtn.addEventListener("click", async () => {
+    isMonitoring = false;
+    clearInterval(monitoringInterval);
+    await updateUIState('complete', 'Monitoring completed');
+    
+    // Reset after 3 seconds
+    setTimeout(async () => {
+        rateDisplay.textContent = '--';
+        updateReadingQuality('--');
+        await updateUIState('waiting', 'Ready to Start Monitoring');
+        
+        // Reset metrics
+        durationDisplay.textContent = '0m';
+        confidenceDisplay.textContent = '--';
+        updatesDisplay.textContent = '0';
+        patternDisplay.textContent = '--';
+    }, 3000);
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', async () => {
+    await updateUIState('waiting', 'Ready to Start Monitoring');
+    updateReadingQuality('--');
 });
 </script>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 {% endblock %}

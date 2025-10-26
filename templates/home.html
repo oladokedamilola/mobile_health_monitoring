@@ -23,8 +23,8 @@
     </p>
 <div>
       {% if user.is_authenticated %}
-        <a href="/dashboard/" class="btn btn-success btn-lg px-4 me-3">Open Dashboard</a>
-        <a href="/analytics/" class="btn btn-outline-light btn-lg px-4">View Analytics</a>
+        <a href="{% url 'accounts:dashboard' %}" class="btn btn-success btn-lg px-4 me-3">Open Dashboard</a>
+        <a href="{% url 'analytics:report' %}" class="btn btn-outline-light btn-lg px-4">View Analytics</a>
       {% else %}
         <a href="/accounts/login/" class="btn btn-success btn-lg px-4 me-3">Sign In</a>
         <a href="#" 
