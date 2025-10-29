@@ -17,6 +17,10 @@
         box-shadow: 0 10px 30px rgba(220, 53, 69, 0.1);
         position: relative;
         transition: transform 0.3s ease;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .gif-container:hover {
@@ -26,8 +30,9 @@
     .heart-gif {
         width: 100%;
         height: 200px;
-        object-fit: cover;
+        object-fit: contain;
         transition: opacity 0.5s ease, transform 0.5s ease;
+        padding: 20px;
     }
     
     .heart-gif.pulsing {
@@ -252,7 +257,7 @@
             <!-- GIF Display Area -->
             <div class="gif-container mb-4">
                 <img id="heartGif" class="heart-gif" 
-                     src="" 
+                     src="{% static 'monitoring/gifs/heart/heart_ready.svg' %}" 
                      alt="Heart Monitor Status">
             </div>
 
@@ -313,32 +318,32 @@
 </div>
 
 <script>
-// Function to check if a local GIF exists
-async function checkLocalGifExists(gifPath) {
+// Function to check if a local SVG exists
+async function checkLocalSvgExists(svgPath) {
     try {
-        const response = await fetch(gifPath, { method: 'HEAD' });
+        const response = await fetch(svgPath, { method: 'HEAD' });
         return response.ok;
     } catch (error) {
         return false;
     }
 }
 
-// Function to get the appropriate GIF URL
-async function getGifUrl(state) {
-    const localGifPath = `/static/monitoring/gifs/heart_${state}.gif`;
-    const gifExists = await checkLocalGifExists(localGifPath);
+// Function to get the appropriate SVG URL
+async function getSvgUrl(state) {
+    const localSvgPath = `/static/monitoring/gifs/heart/heart_${state}.svg`;
+    const svgExists = await checkLocalSvgExists(localSvgPath);
     
-    if (gifExists) {
-        return localGifPath;
+    if (svgExists) {
+        return localSvgPath;
     } else {
-        // Fallback to public GIFs
-        const publicGifs = {
-            waiting: "https://media.giphy.com/media/3og0IMJcSI6z1xWf1u/giphy.gif", // Calm heart
-            monitoring: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif", // Pulsing heart
-            complete: "https://media.giphy.com/media/xULW8N9O5W3WrN6f7W/giphy.gif", // Success heart
-            error: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif" // Error heart
+        // Fallback to simple colored circles as placeholder
+        const fallbackSvgs = {
+            ready: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI0MCIgZmlsbD0iI2ZmZjNjZCIgc3Ryb2tlPSIjZmZlYWE3IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+            scanning: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI0MCIgZmlsbD0iI2QxZWNmMSIgc3Ryb2tlPSIjYmVlNWViIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+            done: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI0MCIgZmlsbD0iI2Q0ZWRkYSIgc3Ryb2tlPSIjYzNlNmNiIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+            error: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI0MCIgZmlsbD0iI2Y4ZDdkYSIgc3Ryb2tlPSIjZjVjNmNiIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
         };
-        return publicGifs[state] || publicGifs.waiting;
+        return fallbackSvgs[state] || fallbackSvgs.ready;
     }
 }
 
@@ -361,18 +366,18 @@ const progressBar = document.getElementById("progressBar");
 
 // Update UI state
 async function updateUIState(state, message) {
-    // Get appropriate GIF URL
-    const gifUrl = await getGifUrl(state);
+    // Get appropriate SVG URL
+    const svgUrl = await getSvgUrl(state);
     
-    // Update GIF with smooth transition
+    // Update SVG with smooth transition
     heartGif.style.opacity = 0;
     
     setTimeout(() => {
-        heartGif.src = gifUrl;
+        heartGif.src = svgUrl;
         heartGif.style.opacity = 1;
         
         // Add/remove pulsing animation based on state
-        if (state === 'monitoring') {
+        if (state === 'scanning') {
             heartGif.classList.add('pulsing');
         } else {
             heartGif.classList.remove('pulsing');
@@ -381,18 +386,28 @@ async function updateUIState(state, message) {
     
     // Update status
     statusText.textContent = message;
-    statusIndicator.className = `status-indicator status-${state} d-inline-block mb-4`;
+    
+    // Update status indicator class
+    if (state === 'ready') {
+        statusIndicator.className = 'status-indicator status-waiting d-inline-block mb-4';
+    } else if (state === 'scanning') {
+        statusIndicator.className = 'status-indicator status-monitoring d-inline-block mb-4';
+    } else if (state === 'done') {
+        statusIndicator.className = 'status-indicator status-complete d-inline-block mb-4';
+    } else if (state === 'error') {
+        statusIndicator.className = 'status-indicator status-error d-inline-block mb-4';
+    }
     
     // Update button states
-    if (state === 'waiting') {
+    if (state === 'ready') {
         startBtn.disabled = false;
         stopBtn.disabled = true;
         resetProgress();
-    } else if (state === 'monitoring') {
+    } else if (state === 'scanning') {
         startBtn.disabled = true;
         stopBtn.disabled = false;
         startProgress();
-    } else if (state === 'complete' || state === 'error') {
+    } else if (state === 'done' || state === 'error') {
         startBtn.disabled = false;
         stopBtn.disabled = true;
         completeProgress();
@@ -454,7 +469,7 @@ function updateReadingQuality(bpm) {
 // Start monitoring
 startBtn.addEventListener("click", async () => {
     isMonitoring = true;
-    await updateUIState('monitoring', 'Monitoring in progress...');
+    await updateUIState('scanning', 'Monitoring in progress...');
     
     // Simulate API call with random heart rate data
     monitoringInterval = setInterval(() => {
@@ -480,19 +495,19 @@ startBtn.addEventListener("click", async () => {
 stopBtn.addEventListener("click", async () => {
     isMonitoring = false;
     clearInterval(monitoringInterval);
-    await updateUIState('complete', 'Monitoring completed');
+    await updateUIState('done', 'Monitoring completed');
     
     // Reset after 3 seconds
     setTimeout(async () => {
         bpmDisplay.textContent = '--';
         updateReadingQuality('--');
-        await updateUIState('waiting', 'Ready to Start Monitoring');
+        await updateUIState('ready', 'Ready to Start Monitoring');
     }, 3000);
 });
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-    await updateUIState('waiting', 'Ready to Start Monitoring');
+    await updateUIState('ready', 'Ready to Start Monitoring');
     updateReadingQuality('--');
 });
 </script>

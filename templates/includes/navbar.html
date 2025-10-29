@@ -1,14 +1,14 @@
 {% load static %}
 <nav class="navbar navbar-expand-lg shadow-sm" style="background: linear-gradient(90deg, #2D6A4F, #40916C);">
-  <div class="container-fluid px-4">
+  <div class="container-fluid px-3 px-md-4">
     <!-- Brand -->
     <a class="navbar-brand d-flex align-items-center fw-bold text-white" href="{% url 'home' %}">
       <img src="{% static 'img/logo-icon.svg' %}" alt="Auralis Logo" width="30" height="30" class="me-2">
       Auralis Health
     </a>
 
-    <!-- Toggler -->
-    <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+    <!-- Toggler - Improved positioning -->
+    <button class="navbar-toggler border-0 p-2" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
@@ -18,7 +18,7 @@
         
         <!-- Common Links -->
         <li class="nav-item">
-          <a class="nav-link text-white fw-medium px-3" href="{% url 'home' %}">Home</a>
+          <a class="nav-link text-white fw-medium px-lg-3 px-2" href="{% url 'home' %}">Home</a>
         </li>
         
         {% if user.is_authenticated %}
@@ -26,18 +26,18 @@
           {% if user.is_superuser or user.role == 'admin' or user.is_email_verified %}
             <!-- Full access for admin/superuser or verified users -->
             <li class="nav-item">
-              <a class="nav-link text-white fw-medium px-3" href="{% url 'accounts:dashboard' %}">Dashboard</a>
+              <a class="nav-link text-white fw-medium px-lg-3 px-2" href="{% url 'accounts:dashboard' %}">Dashboard</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-white fw-medium px-3" href="{% url 'analytics:report' %}">Analytics</a>
+              <a class="nav-link text-white fw-medium px-lg-3 px-2" href="{% url 'analytics:report' %}">Analytics</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-white fw-medium px-3" href="{% url 'notifications:notification-list' %}">Notifications</a>
+              <a class="nav-link text-white fw-medium px-lg-3 px-2" href="{% url 'notifications:notification-list' %}">Notifications</a>
             </li>
           {% else %}
             <!-- Show verification reminder if email not verified and not admin -->
             <li class="nav-item">
-              <a class="nav-link text-warning fw-medium px-3" 
+              <a class="nav-link text-warning fw-medium px-lg-3 px-2" 
                  href="#" 
                  data-bs-toggle="modal" 
                  data-bs-target="#emailVerificationModal"
@@ -49,11 +49,14 @@
 
           <!-- User Dropdown -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-white fw-semibold px-3" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-person-circle me-1"></i> {{ user.username|title }}
+            <a class="nav-link dropdown-toggle text-white fw-semibold px-lg-3 px-2 d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-person-circle me-1"></i> 
+              <span class="me-1">{{ user.username|title }}</span>
               {% if not user.is_email_verified and not user.is_superuser and user.role != 'admin' %}
-                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle">
-                  <span class="visually-hidden">Email not verified</span>
+                <span class="position-relative">
+                  <span class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle">
+                    <span class="visually-hidden">Email not verified</span>
+                  </span>
                 </span>
               {% endif %}
             </a>
@@ -98,7 +101,7 @@
         {% else %}
          <!-- Guest Links -->
         <li class="nav-item">
-          <a class="nav-link text-white fw-medium px-3" 
+          <a class="nav-link text-white fw-medium px-lg-3 px-2" 
             href="#" 
             data-bs-toggle="modal" 
             data-bs-target="#roleSelectModal">
@@ -106,7 +109,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white fw-medium px-3" href="{% url 'accounts:login' %}">Login</a>
+          <a class="nav-link text-white fw-medium px-lg-3 px-2" href="{% url 'accounts:login' %}">Login</a>
         </li>
         {% endif %}
       </ul>
@@ -131,3 +134,96 @@
     </div>
   </div>
 </div>
+
+<style>
+  /* Improved navbar styling with hover effects */
+  .navbar {
+    padding: 0.5rem 0;
+    transition: all 0.3s ease;
+  }
+  
+  .navbar-brand {
+    transition: all 0.3s ease;
+  }
+  
+  .navbar-brand:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+  }
+  
+  .nav-link {
+    position: relative;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    margin: 0 2px;
+  }
+  
+  .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  /* Underline animation effect */
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    background-color: #D8F3DC;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+  }
+  
+  .nav-link:hover::after {
+    width: 70%;
+  }
+  
+  /* Mobile-specific improvements */
+  @media (max-width: 991.98px) {
+    .navbar-collapse {
+      margin-top: 0.5rem;
+      padding: 0.5rem 0;
+    }
+    
+    .nav-item {
+      margin: 0.25rem 0;
+    }
+    
+    .nav-link {
+      padding: 0.5rem 1rem !important;
+    }
+    
+    .dropdown-menu {
+      border: none;
+      box-shadow: none;
+      background-color: rgba(45, 106, 79, 0.1);
+    }
+  }
+  
+  /* Improved toggler button positioning */
+  .navbar-toggler {
+    transition: all 0.3s ease;
+  }
+  
+  .navbar-toggler:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Dropdown improvements */
+  .dropdown-item {
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    margin: 2px 4px;
+  }
+  
+  .dropdown-item:hover {
+    background-color: rgba(45, 106, 79, 0.1);
+    padding-left: 1.25rem;
+  }
+  
+  .dropdown-item.text-danger:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+  }
+</style>

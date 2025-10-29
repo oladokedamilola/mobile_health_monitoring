@@ -55,32 +55,6 @@ a:hover {
   color: var(--color-secondary);
 }
 
-/* ---------- NAVBAR ---------- */
-.navbar {
-  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-  padding: 0.75rem 1.5rem;
-  box-shadow: 0 4px 12px rgba(11, 24, 15, 0.06);
-}
-
-.navbar-brand {
-  color: white;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.navbar-brand:hover {
-  color: var(--color-secondary);
-}
-
-.nav-link {
-  color: rgba(255, 255, 255, 0.95) !important;
-  margin-left: 1rem;
-  transition: var(--transition);
-}
-
-.nav-link:hover {
-  color: var(--color-accent) !important;
-}
 
 /* ---------- HERO SECTION ---------- */
 .hero {

@@ -17,6 +17,10 @@
         box-shadow: 0 10px 30px rgba(13, 110, 253, 0.1);
         position: relative;
         transition: transform 0.3s ease;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .gif-container:hover {
@@ -26,8 +30,9 @@
     .breath-gif {
         width: 100%;
         height: 200px;
-        object-fit: cover;
+        object-fit: contain;
         transition: opacity 0.5s ease, transform 0.5s ease;
+        padding: 20px;
     }
     
     .breath-gif.breathing {
@@ -321,7 +326,7 @@
             <!-- GIF Display Area -->
             <div class="gif-container mb-4">
                 <img id="breathGif" class="breath-gif" 
-                     src="" 
+                     src="{% static 'monitoring/gifs/breath/breath_ready.svg' %}" 
                      alt="Respiratory Monitor Status">
             </div>
 
@@ -411,35 +416,32 @@
 </div>
 
 <script>
-// Function to check if a local GIF exists
-async function checkLocalGifExists(gifPath) {
+// Function to check if a local SVG exists
+async function checkLocalSvgExists(svgPath) {
     try {
-        const response = await fetch(gifPath, { method: 'HEAD' });
+        const response = await fetch(svgPath, { method: 'HEAD' });
         return response.ok;
     } catch (error) {
         return false;
     }
 }
 
-// Function to get the appropriate GIF URL
-async function getGifUrl(state) {
-    const localGifPath = `/static/monitoring/gifs/breath_${state}.gif`;
-    const gifExists = await checkLocalGifExists(localGifPath);
+// Function to get the appropriate SVG URL
+async function getSvgUrl(state) {
+    const localSvgPath = `/static/monitoring/gifs/breath/breath_${state}.svg`;
+    const svgExists = await checkLocalSvgExists(localSvgPath);
     
-    if (gifExists) {
-        return localGifPath;
+    if (svgExists) {
+        return localSvgPath;
     } else {
-        // Fallback to public GIFs
-        const publicGifs = {
-            waiting: "https://media.giphy.com/media/3og0IMJcSI6z1xWf1u/giphy.gif", // Calm breathing
-            monitoring: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif", // Gentle breathing
-            normal: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Normal breathing
-            fast: "https://media.giphy.com/media/3o72FfM5HJydzafgUE/giphy.gif", // Fast breathing
-            slow: "https://media.giphy.com/media/xULW8N9O5W3WrN6f7W/giphy.gif", // Slow breathing
-            complete: "https://media.giphy.com/media/3o7aD2saYlB39AYL7y/giphy.gif", // Success
-            error: "https://media.giphy.com/media/l4FGo4RqW6re6AZU4/giphy.gif" // Error
+        // Fallback to simple colored circles as placeholder
+        const fallbackSvgs = {
+            ready: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI0MCIgZmlsbD0iI2UyZTNlNSIgc3Ryb2tlPSIjZDZkOGRiIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+            scanning: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI0MCIgZmlsbD0iI2NmZjRmYyIgc3Ryb2tlPSIjYjZlZmZiIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+            done: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI0MCIgZmlsbD0iI2QxZTdkZCIgc3Ryb2tlPSIjYmFkYmNjIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+            error: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI0MCIgZmlsbD0iI2Y4ZDdkYSIgc3Ryb2tlPSIjZjFhZWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
         };
-        return publicGifs[state] || publicGifs.waiting;
+        return fallbackSvgs[state] || fallbackSvgs.ready;
     }
 }
 
@@ -478,18 +480,18 @@ const progressBar = document.getElementById("progressBar");
 
 // Update UI state
 async function updateUIState(state, message) {
-    // Get appropriate GIF URL
-    const gifUrl = await getGifUrl(state);
+    // Get appropriate SVG URL
+    const svgUrl = await getSvgUrl(state);
     
-    // Update GIF with fade transition
+    // Update SVG with fade transition
     breathGif.style.opacity = 0;
     
     setTimeout(() => {
-        breathGif.src = gifUrl;
+        breathGif.src = svgUrl;
         breathGif.style.opacity = 1;
         
         // Add/remove breathing animation based on state
-        if (state === 'monitoring' || state === 'normal' || state === 'fast' || state === 'slow') {
+        if (state === 'scanning') {
             breathGif.classList.add('breathing');
         } else {
             breathGif.classList.remove('breathing');
@@ -498,20 +500,30 @@ async function updateUIState(state, message) {
     
     // Update status
     statusText.textContent = message;
-    statusIndicator.className = `status-indicator status-${state} d-inline-block mb-4`;
+    
+    // Update status indicator class
+    if (state === 'ready') {
+        statusIndicator.className = 'status-indicator status-waiting d-inline-block mb-4';
+    } else if (state === 'scanning') {
+        statusIndicator.className = 'status-indicator status-monitoring d-inline-block mb-4';
+    } else if (state === 'done') {
+        statusIndicator.className = 'status-indicator status-complete d-inline-block mb-4';
+    } else if (state === 'error') {
+        statusIndicator.className = 'status-indicator status-error d-inline-block mb-4';
+    }
     
     // Update button states
-    if (state === 'waiting') {
+    if (state === 'ready') {
         startBtn.disabled = false;
         stopBtn.disabled = true;
         resetProgress();
         breathAnimation.style.animationPlayState = 'paused';
-    } else if (state === 'monitoring') {
+    } else if (state === 'scanning') {
         startBtn.disabled = true;
         stopBtn.disabled = false;
         startProgress();
         breathAnimation.style.animationPlayState = 'running';
-    } else if (state === 'complete' || state === 'error') {
+    } else if (state === 'done' || state === 'error') {
         startBtn.disabled = false;
         stopBtn.disabled = true;
         completeProgress();
@@ -572,7 +584,7 @@ function updateReadingQuality(rate) {
 }
 
 // Update metrics
-async function updateMetrics(rate, pattern) {
+function updateMetrics(rate, pattern) {
     updateCount++;
     updatesDisplay.textContent = updateCount;
     
@@ -588,23 +600,6 @@ async function updateMetrics(rate, pattern) {
     
     // Update pattern display
     patternDisplay.textContent = breathingPatterns[pattern] || '--';
-    
-    // Update GIF based on breathing pattern
-    if (rate !== '--') {
-        const rateValue = parseInt(rate);
-        let gifState = 'normal';
-        
-        if (rateValue < 10) gifState = 'slow';
-        else if (rateValue > 20) gifState = 'fast';
-        else gifState = 'normal';
-        
-        const gifUrl = await getGifUrl(gifState);
-        breathGif.style.opacity = 0;
-        setTimeout(() => {
-            breathGif.src = gifUrl;
-            breathGif.style.opacity = 1;
-        }, 200);
-    }
 }
 
 // Simulate respiratory rate detection (for demo purposes)
@@ -630,16 +625,16 @@ startBtn.addEventListener("click", async () => {
     isMonitoring = true;
     monitoringStartTime = Date.now();
     updateCount = 0;
-    await updateUIState('monitoring', 'Monitoring breathing pattern...');
+    await updateUIState('scanning', 'Monitoring breathing pattern...');
     
-    monitoringInterval = setInterval(async () => {
+    monitoringInterval = setInterval(() => {
         // In a real application, you would fetch from your API
         // fetch("{% url 'monitoring:respiration_data_api' %}")
         // For demo purposes, we'll simulate data
         const simulatedData = simulateRespiratoryDetection();
         
         // Simulate API response
-        setTimeout(async () => {
+        setTimeout(() => {
             rateDisplay.textContent = simulatedData.respiratory_rate;
             rateDisplay.style.transform = 'scale(1.1)';
             
@@ -647,7 +642,7 @@ startBtn.addEventListener("click", async () => {
             updateReadingQuality(simulatedData.respiratory_rate.toString());
             
             // Update metrics
-            await updateMetrics(simulatedData.respiratory_rate.toString(), simulatedData.pattern);
+            updateMetrics(simulatedData.respiratory_rate.toString(), simulatedData.pattern);
             
             setTimeout(() => {
                 rateDisplay.style.transform = 'scale(1)';
@@ -661,13 +656,13 @@ startBtn.addEventListener("click", async () => {
 stopBtn.addEventListener("click", async () => {
     isMonitoring = false;
     clearInterval(monitoringInterval);
-    await updateUIState('complete', 'Monitoring completed');
+    await updateUIState('done', 'Monitoring completed');
     
     // Reset after 3 seconds
     setTimeout(async () => {
         rateDisplay.textContent = '--';
         updateReadingQuality('--');
-        await updateUIState('waiting', 'Ready to Start Monitoring');
+        await updateUIState('ready', 'Ready to Start Monitoring');
         
         // Reset metrics
         durationDisplay.textContent = '0m';
@@ -679,7 +674,7 @@ stopBtn.addEventListener("click", async () => {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-    await updateUIState('waiting', 'Ready to Start Monitoring');
+    await updateUIState('ready', 'Ready to Start Monitoring');
     updateReadingQuality('--');
 });
 </script>

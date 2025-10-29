@@ -1,0 +1,23 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="heartScanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dc3545"/>
+      <stop offset="100%" stop-color="#e74c3c"/>
+    </linearGradient>
+    <style>
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.15); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      .pulse { 
+        animation: pulse 1.5s ease-in-out infinite; 
+        transform-origin: center;
+      }
+    </style>
+  </defs>
+  <g class="pulse">
+    <path d="M100,70 C80,50 50,55 50,80 C50,110 100,150 100,150 C100,150 150,110 150,80 C150,55 120,50 100,70 Z" 
+          fill="url(#heartScanGrad)"/>
+  </g>
+</svg>
